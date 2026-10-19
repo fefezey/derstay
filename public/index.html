@@ -200,10 +200,14 @@
       <div class="card lesson">
         <div class="lesson-head">
           <span class="icon-box" data-icon="clock"></span>
-          <div>
-            <b data-i18n="today_label"></b>
+          <div class="grow">
+            <b id="tDayLabel"></b>
             <span id="tDate" class="muted"></span>
             <span id="tWindow" class="window"></span>
+          </div>
+          <div class="day-nav">
+            <button id="dayPrev" class="icon-btn" data-icon="chevL" aria-label="Önceki gün"></button>
+            <button id="dayNext" class="icon-btn" data-icon="chevR" aria-label="Sonraki gün"></button>
           </div>
         </div>
         <div class="stats inline">
@@ -217,12 +221,28 @@
         </div>
       </div>
 
-      <h3 class="section-title" data-i18n="live_list"></h3>
+      <h3 id="tListTitle" class="section-title"></h3>
       <label class="search">
         <span data-icon="search"></span>
         <input id="search" type="search" data-i18n-ph="search" autocomplete="off">
       </label>
       <ul id="tList" class="rows"></ul>
+    </div>
+  </section>
+
+  <!-- Hoca: Geçmiş yoklamalar -->
+  <section id="t-history" class="page" hidden>
+    <header class="hero small">
+      <h1 data-i18n="t_history"></h1>
+      <p data-i18n="t_history_sub"></p>
+    </header>
+    <div class="content">
+      <div class="card stats">
+        <div><span class="dot all" data-icon="calendar"></span><small data-i18n="class_days"></small><b id="thDays">0</b></div>
+        <div><span class="dot ok" data-icon="users"></span><small data-i18n="avg_present"></small><b id="thAvg">0</b></div>
+        <div><span class="dot wait" data-icon="clock"></span><small data-i18n="pending"></small><b id="thWait">0</b></div>
+      </div>
+      <ul id="thList" class="rows"></ul>
     </div>
   </section>
 
