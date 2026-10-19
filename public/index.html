@@ -80,12 +80,37 @@
         <svg class="g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#111" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>
         <span data-i18n="login_btn"></span>
       </button>
+      <button id="emailBtn" class="btn btn-outline btn-lg mt"><span data-icon="mail"></span><span data-i18n="email_btn"></span></button>
+      <p class="center small"><span class="muted" data-i18n="no_account"></span> <button class="link" id="signupLink" data-i18n="signup"></button></p>
       <p class="fine" data-i18n="login_fine"></p>
     </div>
     <footer class="login-foot">
       <svg viewBox="0 0 400 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60V30C80 0 160 50 240 30S360 0 400 20V60z" fill="#FFD21F"/><path d="M0 60V44C90 20 170 60 260 44S370 24 400 36V60z" fill="#111"/></svg>
       <span class="logo on-dark" aria-label="English Time"><span class="l1">ENGLISH</span><svg class="ben" viewBox="0 0 64 240"><use href="#ben"/></svg><span class="l2">TIME</span></span>
     </footer>
+  </section>
+
+  <!-- E-posta ile giriş / kayıt / şifre sıfırlama -->
+  <section id="auth" class="screen auth" hidden>
+    <div class="auth-top">
+      <button id="authBack" class="icon-btn" data-icon="back" aria-label="Geri"></button>
+      <span class="lang-switch"><button data-lang="tr">TR</button><button data-lang="en">EN</button></span>
+    </div>
+    <span class="logo" aria-label="English Time"><span class="l1">ENGLISH</span><svg class="ben" viewBox="0 0 64 240"><use href="#ben"/></svg><span class="l2">TIME</span></span>
+    <div id="authBody" class="auth-body"></div>
+  </section>
+
+  <!-- E-posta doğrulama -->
+  <section id="verify" class="screen auth" hidden>
+    <span class="logo" aria-label="English Time"><span class="l1">ENGLISH</span><svg class="ben" viewBox="0 0 64 240"><use href="#ben"/></svg><span class="l2">TIME</span></span>
+    <div class="auth-body center">
+      <span class="big-icon" data-icon="mail"></span>
+      <h2 data-i18n="verify_t"></h2>
+      <p class="muted" id="verifyText"></p>
+      <button id="verifyDone" class="btn btn-yellow btn-lg" data-i18n="verify_done"></button>
+      <button id="verifyAgain" class="btn btn-outline btn-lg" data-i18n="verify_again"></button>
+      <button id="verifyOut" class="link" data-i18n="logout"></button>
+    </div>
   </section>
 
   <!-- Öğrenci: Ana sayfa -->
@@ -99,15 +124,7 @@
       <p data-i18n="s_sub"></p>
     </header>
     <div class="content">
-      <div class="card today">
-        <span class="icon-box" data-icon="calendar"></span>
-        <div class="today-text">
-          <small data-i18n="today_label"></small>
-          <b>English Time</b>
-          <span id="sDate"></span>
-        </div>
-        <span id="sClock" class="today-clock"></span>
-      </div>
+      <button id="sLesson" class="card today" data-go="lessons"></button>
 
       <button id="checkin" class="checkin" hidden>
         <span class="checkin-row"><span class="check-dot" data-icon="check"></span><span data-i18n="checkin"></span></span>
@@ -128,15 +145,15 @@
       </button>
 
       <div class="tiles">
+        <button class="tile" data-go="lessons">
+          <span data-icon="calendar"></span>
+          <b data-i18n="my_lessons"></b>
+          <small data-i18n="my_lessons_sub"></small>
+        </button>
         <button class="tile" data-go="s-history">
           <span data-icon="history"></span>
           <b data-i18n="history"></b>
           <small data-i18n="history_sub"></small>
-        </button>
-        <button class="tile" data-go="profile">
-          <span data-icon="user"></span>
-          <b data-i18n="my_profile"></b>
-          <small data-i18n="my_profile_sub"></small>
         </button>
       </div>
 
@@ -160,17 +177,59 @@
     </div>
   </section>
 
-  <!-- Hoca: Yoklama -->
-  <section id="t-home" class="page" hidden>
+  <!-- Ders programı (öğrenci ve hoca) -->
+  <section id="lessons" class="page" hidden>
+    <header class="hero small">
+      <div class="title-row">
+        <h1 data-i18n="schedule"></h1>
+        <button id="addLesson" class="pill-btn" hidden><span data-icon="plus"></span><span data-i18n="new_lesson"></span></button>
+      </div>
+      <p data-i18n="schedule_sub"></p>
+    </header>
+    <div class="content">
+      <div class="card list-card">
+        <div class="card-head"><h3 data-i18n="today"></h3><span id="lToday" class="muted small"></span></div>
+        <div id="lTodayList"></div>
+      </div>
+      <h3 class="section-title" data-i18n="weekly"></h3>
+      <div id="lWeek" class="week"></div>
+    </div>
+  </section>
+
+  <!-- Hoca: Bugünkü dersler -->
+  <section id="t-today" class="page" hidden>
     <header class="hero">
       <div class="hero-top">
         <span class="logo on-dark" aria-label="English Time"><span class="l1">ENGLISH</span><svg class="ben" viewBox="0 0 64 240"><use href="#ben"/></svg><span class="l2">TIME</span></span>
-        <span id="tLive" class="live"></span>
       </div>
       <h1 id="tHello"></h1>
       <p data-i18n="t_sub"></p>
     </header>
     <div class="content">
+      <div class="card list-card">
+        <div class="card-head"><h3 data-i18n="todays_lessons"></h3><button class="link" data-go="lessons" data-i18n="all"></button></div>
+        <div id="tTodayList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hoca: Ders detayı -->
+  <section id="t-home" class="page" hidden>
+    <header class="hero small">
+      <div class="title-row">
+        <button class="icon-btn" data-go="t-today" data-icon="back" aria-label="Geri"></button>
+        <h1 data-i18n="lesson_detail"></h1>
+        <span id="tLive" class="live"></span>
+      </div>
+    </header>
+    <div class="content">
+      <div id="tLessonCard" class="yellow-card"></div>
+      <div class="seg">
+        <button data-seg="list" class="on" data-i18n="att_list"></button>
+        <button data-seg="info" data-i18n="lesson_info"></button>
+      </div>
+      <div id="segInfo" class="seg-pane" hidden></div>
+      <div id="segList" class="seg-pane">
       <div class="card lesson">
         <div class="lesson-head">
           <span class="icon-box" data-icon="clock"></span>
@@ -196,6 +255,29 @@
         <input id="search" type="search" data-i18n-ph="search" autocomplete="off">
       </label>
       <ul id="tList" class="rows"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hoca: Ders ekle / düzenle -->
+  <section id="lesson-form" class="page" hidden>
+    <header class="hero small">
+      <div class="title-row">
+        <button id="formBack" class="icon-btn" data-icon="back" aria-label="Geri"></button>
+        <h1 id="formTitle"></h1>
+      </div>
+    </header>
+    <div class="content">
+      <form id="lessonForm" class="card form pad">
+        <label><span data-i18n="f_name"></span><input name="name" required maxlength="60" data-i18n-ph="f_name_ph"></label>
+        <div class="two">
+          <label><span data-i18n="f_start"></span><input name="start" type="time" required></label>
+          <label><span data-i18n="f_end"></span><input name="end" type="time" required></label>
+        </div>
+        <fieldset class="day-pick"><legend data-i18n="f_days"></legend><div id="dayPick"></div></fieldset>
+        <p class="hint"><span data-icon="clock"></span><span data-i18n="f_hint"></span></p>
+        <button id="formSave" class="btn btn-yellow btn-lg" type="submit"></button>
+      </form>
     </div>
   </section>
 
