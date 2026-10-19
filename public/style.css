@@ -508,3 +508,15 @@ button:disabled { cursor: default; opacity: .45; }
 .day-row .count small { font-weight: 600; font-size: 12px; color: var(--muted); }
 .day-row .chev { display: grid; color: var(--muted); }
 .day-row .chev svg { width: 18px; height: 18px; }
+
+/* ---------- Aylık Excel raporu ---------- */
+
+.export-card { padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 12px; }
+.export-top { display: flex; align-items: center; gap: 8px; }
+.export-top .icon-btn { width: 36px; height: 36px; border-radius: 50%; background: #F3F3F1; }
+.export-top .icon-btn svg { width: 18px; height: 18px; }
+.export-top .icon-btn:disabled { opacity: .3; }
+.export-title { flex: 1; text-align: center; display: flex; flex-direction: column; }
+.export-title small { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.export-title b { font-size: 17px; text-transform: capitalize; }
+.export-card .fine { margin: 0; }

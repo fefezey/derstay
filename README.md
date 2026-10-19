@@ -31,6 +31,7 @@ Daha az uğraş, daha güvenilir yoklama. 🎯
 3. Hoca kendi telefonunda listeyi canlı görür: **Onayla / Reddet** ya da **Hepsini onayla**. Hocanın ayarlaması gereken bir şey yok.
 4. Hoca **Yoklamayı kapat** deyince o gün kimse giriş yapamaz.
 5. Hoca **Geçmiş** sekmesinde son 60 günü gün gün görür (kaç kişi geldi, bekleyen, ret); bir güne dokununca o günün listesini açar, gerekirse onayı düzeltir. Yoklama ekranında ‹ › ile günler arasında gezilir.
+6. Geçmiş sekmesindeki **Excel'e aktar** ile seçilen ayın raporu indirilir: öğrenci × gün tablosu (✓ geldi, ? bekliyor, ✗ ret, katılım yüzdesi) ve tüm kayıtların listesi. Örnek: [`docs/ornek/ornek-rapor.xlsx`](docs/ornek/ornek-rapor.xlsx)
 5. Öğrenci **Geçmiş** sekmesinde eski kayıtlarını, **Profil**'de bilgilerini görür.
 6. Uygulama **Türkçe** ve **İngilizce**: giriş ekranındaki ve Profil'deki **TR | EN** düğmesiyle değişir, seçim telefonda hatırlanır.
 7. Öğrenci Profil'den **fotoğrafını** ekler; hoca listede görür, dokununca büyütür. Fotoğrafı sadece sahibi ve hocalar görebilir.
