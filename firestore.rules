@@ -1,0 +1,79 @@
+rules_version = '2';
+
+// Derstayım – English Time yoklama kuralları.
+// Uygulama kodu ne yaparsa yapsın, bu kurallar Google sunucusunda çalışır;
+// öğrenci tarayıcıyı kurcalasa bile aşamaz.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Hocalar Firebase konsolundan elle eklenir: teachers/{hocanın uid'i}
+    function isTeacher() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/teachers/$(request.auth.uid));
+    }
+
+    function pad(n) {
+      return (n < 10 ? '0' : '') + string(n);
+    }
+
+    // Sunucu saatine göre Türkiye'de (UTC+3) bugünün tarihi: "YYYY-AA-GG"
+    function todayTR() {
+      let t = request.time + duration.value(3, 'h');
+      return string(t.year()) + '-' + pad(t.month()) + '-' + pad(t.day());
+    }
+
+    // Hoca "Yoklamayı kapat" demediyse yoklama açıktır
+    function sessionOpen(sid) {
+      let path = /databases/$(database)/documents/sessions/$(sid);
+      return !exists(path) || get(path).data.open == true;
+    }
+
+    match /teachers/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // sessions/{tarih_sınıf} → { open: true/false }
+    match /sessions/{sid} {
+      allow read: if signedIn();
+      allow write: if isTeacher();
+    }
+
+    // attendance/{tarih_sınıf_uid}
+    match /attendance/{id} {
+      // Hoca hepsini görür; öğrenci sadece kendi kaydını
+      allow read: if isTeacher()
+        || (signedIn() && id.matches('.*_' + request.auth.uid));
+
+      // Öğrenci: sadece kendi adına, sadece bugüne, sadece sunucu saatiyle,
+      // sadece "bekliyor" durumunda ve yoklama açıksa kayıt açabilir.
+      // Belge kimliği sabit olduğu için aynı gün ikinci kez giriş yapılamaz.
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(
+             ['uid', 'name', 'email', 'classId', 'date', 'checkedInAt', 'status'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.name == request.auth.token.get('name', '')
+        && request.resource.data.email == request.auth.token.get('email', '')
+        && request.resource.data.classId is string
+        && request.resource.data.classId.matches('^[A-Za-z ]{2,30}$')
+        && request.resource.data.date == todayTR()
+        && request.resource.data.checkedInAt == request.time
+        && request.resource.data.status == 'pending'
+        && id == todayTR() + '_' + request.resource.data.classId + '_' + request.auth.uid
+        && sessionOpen(todayTR() + '_' + request.resource.data.classId);
+
+      // Onay / ret sadece hocada; giriş saati ve isim değiştirilemez
+      allow update: if isTeacher()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'decidedAt', 'decidedBy'])
+        && request.resource.data.status in ['pending', 'approved', 'rejected'];
+
+      // Kimse silemez (iz kalsın)
+      allow delete: if false;
+    }
+  }
+}

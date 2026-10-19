@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#FCEB4F">
+  <title>Derstayım · English Time</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">ENGLISH <b>TIME</b></span>
+      <span class="app">Derstayım</span>
+    </div>
+    <div id="who" hidden>
+      <span id="userName"></span>
+      <button id="logout" class="link">Çıkış</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="loading" class="view"><p class="muted">Yükleniyor…</p></section>
+
+    <section id="login" class="view" hidden>
+      <h1>Yoklamaya hoş geldin</h1>
+      <p class="muted">Kendi Google hesabınla giriş yap.</p>
+      <button id="loginBtn" class="primary">Google ile giriş yap</button>
+    </section>
+
+    <section id="student" class="view" hidden>
+      <label class="field">Sınıfın
+        <select id="studentClass"></select>
+      </label>
+      <p id="studentDate" class="muted"></p>
+      <button id="checkin" class="big">Geldim</button>
+      <div id="studentStatus" class="status"></div>
+    </section>
+
+    <section id="teacher" class="view" hidden>
+      <div class="row">
+        <label class="field">Sınıf
+          <select id="teacherClass"></select>
+        </label>
+        <span id="teacherDate" class="muted"></span>
+      </div>
+      <div class="counts" id="counts"></div>
+      <div class="row actions">
+        <button id="approveAll" class="primary">Bekleyenlerin hepsini onayla</button>
+        <button id="toggleSession" class="danger">Yoklamayı kapat</button>
+      </div>
+      <ul id="list" class="list"></ul>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

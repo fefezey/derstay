@@ -1,0 +1,15 @@
+{
+  "name": "derstayim",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project demo-derstayim \"node test/rules.test.mjs\"",
+    "dev": "firebase emulators:start --project demo-derstayim",
+    "deploy": "firebase deploy"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.0",
+    "firebase": "^10.14.1",
+    "firebase-tools": "^13.0.0"
+  }
+}
