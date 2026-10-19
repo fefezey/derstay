@@ -50,7 +50,7 @@ Kurallar Google sunucusunda çalışır; tarayıcıyı kurcalamak işe yaramaz.
 ## 🗂️ Proje Yapısı
 
 ```
-public/            Uygulama (index.html, app.js, style.css, config.js)
+public/            Uygulama (index.html, app.js, style.css, config.js, words.js = günün kelimesi)
 firestore.rules    Güvenlik kuralları
 test/              Kural testleri (Firebase emülatörü ile)
 docs/              Ekran görüntüleri
