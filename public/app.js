@@ -3,7 +3,7 @@ import {
   getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, connectAuthEmulator,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, query, where, limit,
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, limit,
   serverTimestamp, writeBatch, connectFirestoreEmulator,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { firebaseConfig } from "./config.js";
@@ -43,6 +43,7 @@ const ICONS = {
   info: svg(`<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>`),
   logout: svg(`<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/>`),
   undo: svg(`<path d="M4 10h11a5 5 0 0 1 0 10h-3"/><path d="M8 6l-4 4 4 4"/>`),
+  camera: svg(`<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>`),
   globe: svg(`<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 3.5 5.5 3.5 8.5s-1 6-3.5 8.5c-2.5-2.5-3.5-5.5-3.5-8.5s1-6 3.5-8.5z"/>`),
 };
 
@@ -92,6 +93,7 @@ function toast(msg) {
 
 const SCREENS = ["loading", "login", "s-home", "s-history", "t-home", "profile"];
 let tabs = [];
+let me = null, meIsTeacher = false, myPhoto = null, profileUnsub = null;
 let rerender = () => {}; // dil değişince açık ekranı yeniden çizer
 
 function go(id) {
@@ -113,6 +115,7 @@ document.addEventListener("click", (e) => {
   if (l) {
     setLang(l.dataset.lang);
     setTabs(tabs);
+    renderPhoto();
     rerender();
     return;
   }
@@ -122,11 +125,15 @@ document.addEventListener("click", (e) => {
 
 $("#loginBtn").onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
   .catch((e) => toast(t("login_error") + e.message));
+$("#lightbox").onclick = () => { $("#lightbox").hidden = true; };
 $("#logout").onclick = () => { if (confirm(t("confirm_logout"))) signOut(auth); };
 
 onAuthStateChanged(auth, async (user) => {
   clearSubs();
+  profileUnsub?.();
   rerender = () => {};
+  me = user;
+  myPhoto = null;
   $("#success").hidden = true;
   if (!user) {
     setTabs([]);
@@ -134,13 +141,71 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
   go("loading");
-  const isTeacher = (await getDoc(doc(db, "teachers", user.uid))).exists();
-  fillProfile(user, isTeacher);
-  isTeacher ? startTeacher(user) : startStudent(user);
+  meIsTeacher = (await getDoc(doc(db, "teachers", user.uid))).exists();
+  fillProfile(user, meIsTeacher);
+  profileUnsub = onSnapshot(doc(db, "profiles", user.uid), (s) => {
+    myPhoto = s.data()?.photo ?? "";
+    renderPhoto();
+  }, (e) => toast(e.message));
+  meIsTeacher ? startTeacher(user) : startStudent(user);
 });
 
+// ---------- Profil fotoğrafı ----------
+
+function renderPhoto() {
+  if (!me) return;
+  $("#pAvatar").innerHTML = avatar(me.displayName, myPhoto || me.photoURL);
+  const has = Boolean(myPhoto);
+  $("#photoCard").classList.toggle("done", has);
+  $("#photoTitle").textContent = t(has ? "photo_has_t" : "photo_none_t");
+  $("#photoText").textContent = t(has ? "photo_has" : "photo_none");
+  $("#photoPick").textContent = t(has ? "photo_change" : "photo_add");
+  $("#photoRemove").hidden = !has;
+  $("#photoNudge").hidden = meIsTeacher || myPhoto !== "";
+}
+
+// Fotoğrafı ortadan kare kırpıp 320px JPEG'e küçültür (~30 KB)
+function shrinkPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const size = 320;
+      const side = Math.min(img.naturalWidth, img.naturalHeight);
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = size;
+      canvas.getContext("2d").drawImage(img,
+        (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, size, size);
+      let quality = 0.82, data = canvas.toDataURL("image/jpeg", quality);
+      while (data.length > 190000 && quality > 0.3) data = canvas.toDataURL("image/jpeg", (quality -= 0.15));
+      resolve(data);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("image")); };
+    img.src = url;
+  });
+}
+
+$("#photoPick").onclick = () => $("#photoInput").click();
+$("#photoInput").onchange = async (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = "";
+  if (!file || !me) return;
+  toast(t("photo_saving"));
+  try {
+    const photo = await shrinkPhoto(file);
+    await setDoc(doc(db, "profiles", me.uid), { photo, updatedAt: serverTimestamp() });
+    toast(t("photo_saved"));
+  } catch {
+    toast(t("photo_error"));
+  }
+};
+$("#photoRemove").onclick = async () => {
+  if (!me || !confirm(t("photo_confirm_remove"))) return;
+  await deleteDoc(doc(db, "profiles", me.uid)).catch((err) => toast(err.message));
+};
+
 function fillProfile(user, isTeacher) {
-  $("#pAvatar").innerHTML = avatar(user.displayName, user.photoURL);
   $("#pName").textContent = user.displayName || "—";
   $("#pEmail").textContent = user.email || "";
   $("#pRole").textContent = t(isTeacher ? "role_teacher" : "role_student");
@@ -313,6 +378,17 @@ function startTeacher(user) {
 
   let date, session, rows = [];
   const seen = new Set();
+  const photos = new Map(); // uid → öğrencinin yüklediği fotoğraf ("" = yok)
+
+  const loadPhotos = () => {
+    for (const r of rows) {
+      if (!r.uid || photos.has(r.uid)) continue;
+      photos.set(r.uid, "");
+      getDoc(doc(db, "profiles", r.uid))
+        .then((s) => { if (s.data()?.photo) { photos.set(r.uid, s.data().photo); render(); } })
+        .catch(() => {});
+    }
+  };
 
   const render = () => {
     $("#tHello").textContent = hello(name, "hello_teacher");
@@ -353,7 +429,7 @@ function startTeacher(user) {
                  </div>`;
             return `
             <li class="${isNew ? "new" : ""}">
-              <span class="avatar">${avatar(r.name || r.email, r.photo)}</span>
+              <span class="avatar">${avatar(r.name || r.email, photos.get(r.uid) || r.photo)}</span>
               <div class="who">
                 <div class="name">${esc(r.name || r.email)}</div>
                 <div class="time">${fmtTime(r.checkedInAt)}</div>
@@ -376,6 +452,7 @@ function startTeacher(user) {
       rows = snap.docs
         .map((d) => ({ id: d.id, ...d.data() }))
         .sort((a, b) => (a.checkedInAt?.toMillis() ?? Infinity) - (b.checkedInAt?.toMillis() ?? Infinity));
+      loadPhotos();
       render();
     }, (e) => toast(e.message)));
     render();
@@ -389,6 +466,13 @@ function startTeacher(user) {
   });
 
   list.onclick = (e) => {
+    const img = e.target.closest(".avatar img");
+    if (img) {
+      $("#lightboxImg").src = img.src;
+      $("#lightboxName").textContent = img.closest("li").querySelector(".name").textContent;
+      $("#lightbox").hidden = false;
+      return;
+    }
     const b = e.target.closest("button[data-act]");
     if (!b) return;
     navigator.vibrate?.(15);

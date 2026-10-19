@@ -43,6 +43,19 @@ service cloud.firestore {
       allow write: if isTeacher();
     }
 
+    // profiles/{uid} → { photo: "data:image/jpeg;base64,...", updatedAt }
+    // Fotoğrafı sadece sahibi değiştirir; sahibi ve hocalar görür.
+    match /profiles/{uid} {
+      allow read: if isTeacher() || (signedIn() && request.auth.uid == uid);
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['photo', 'updatedAt'])
+        && request.resource.data.photo is string
+        && request.resource.data.photo.size() < 200000
+        && request.resource.data.photo.matches('^data:image/jpeg;base64,.+')
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
     // attendance/{tarih_uid}
     match /attendance/{id} {
       // Hoca hepsini görür; öğrenci sadece kendi kayıtlarını (geçmiş dahil)

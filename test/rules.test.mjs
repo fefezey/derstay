@@ -38,6 +38,14 @@ await t("hoca yeniden açar", assertSucceeds(setDoc(doc(hoca, `sessions/${today}
 await t("açılınca giriş olur", assertSucceeds(setDoc(doc(ayse, id("ayse")), rec("ayse", "Ayşe", "ayse@x.com"))));
 await t("Google fotoğrafı kabul edilir", assertSucceeds(setDoc(doc(env.authenticatedContext("can", { name: "Can", email: "can@x.com" }).firestore(), id("can")), rec("can", "Can", "can@x.com", { photo: "https://lh3.googleusercontent.com/a/abc=s96-c" }))));
 await t("başka siteden fotoğraf olmaz", assertFails(setDoc(doc(env.authenticatedContext("ece", { name: "Ece", email: "ece@x.com" }).firestore(), id("ece")), rec("ece", "Ece", "ece@x.com", { photo: "https://kotu.site/resim.png" }))));
+const jpeg = "data:image/jpeg;base64," + "A".repeat(40000);
+await t("öğrenci kendi fotoğrafını yükler", assertSucceeds(setDoc(doc(ali, "profiles/ali"), { photo: jpeg, updatedAt: serverTimestamp() })));
+await t("başkasının fotoğrafını değiştiremez", assertFails(setDoc(doc(ali, "profiles/ayse"), { photo: jpeg, updatedAt: serverTimestamp() })));
+await t("çok büyük fotoğraf olmaz", assertFails(setDoc(doc(ali, "profiles/ali"), { photo: "data:image/jpeg;base64," + "A".repeat(210000), updatedAt: serverTimestamp() })));
+await t("resim olmayan veri olmaz", assertFails(setDoc(doc(ali, "profiles/ali"), { photo: "merhaba", updatedAt: serverTimestamp() })));
+await t("hoca öğrencinin fotoğrafını görür", assertSucceeds(getDoc(doc(hoca, "profiles/ali"))));
+await t("başka öğrenci fotoğrafı göremez", assertFails(getDoc(doc(ayse, "profiles/ali"))));
+await t("öğrenci fotoğrafını kaldırır", assertSucceeds(deleteDoc(doc(ali, "profiles/ali"))));
 console.log(`\n${pass} geçti, ${fail} kaldı`);
 await env.cleanup();
 process.exit(fail ? 1 : 0);

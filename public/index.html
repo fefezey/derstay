@@ -94,6 +94,12 @@
         </div>
       </div>
 
+      <button id="photoNudge" class="nudge" data-go="profile" hidden>
+        <span class="nudge-icon" data-icon="camera"></span>
+        <span class="nudge-text"><b data-i18n="photo_nudge_t"></b><span data-i18n="photo_nudge"></span></span>
+        <span class="nudge-go">›</span>
+      </button>
+
       <div class="tiles">
         <button class="tile" data-go="s-history">
           <span data-icon="history"></span>
@@ -171,7 +177,11 @@
     <header class="hero profile-hero">
       <h1 data-i18n="profile"></h1>
       <div class="me">
-        <span id="pAvatar" class="avatar xl"></span>
+        <label class="avatar-edit">
+          <span id="pAvatar" class="avatar xl"></span>
+          <span class="cam" data-icon="camera"></span>
+          <input id="photoInput" type="file" accept="image/*" hidden>
+        </label>
         <div>
           <b id="pName"></b>
           <span id="pEmail"></span>
@@ -179,6 +189,17 @@
       </div>
     </header>
     <div class="content">
+      <div id="photoCard" class="card photo-card">
+        <span class="photo-card-icon" data-icon="camera"></span>
+        <div class="photo-card-text">
+          <b id="photoTitle"></b>
+          <span id="photoText"></span>
+        </div>
+        <div class="photo-card-acts">
+          <button id="photoPick" class="btn btn-yellow btn-sm"></button>
+          <button id="photoRemove" class="btn btn-outline btn-sm" data-i18n="photo_remove"></button>
+        </div>
+      </div>
       <ul class="menu">
         <li><span data-icon="shield"></span><span data-i18n="role"></span><em id="pRole"></em></li>
         <li id="pStatRow"><span data-icon="check"></span><span data-i18n="approved_count"></span><em id="pStat"></em></li>
@@ -216,6 +237,12 @@
     </div>
     <button id="successOk" class="btn btn-black btn-lg" data-i18n="ok"></button>
     <p class="goodjob">Good job! ☺</p>
+  </div>
+
+  <!-- Fotoğrafı büyütme (hoca) -->
+  <div id="lightbox" class="lightbox" hidden>
+    <img id="lightboxImg" alt="">
+    <b id="lightboxName"></b>
   </div>
 
   <div id="toast" class="toast" hidden></div>
