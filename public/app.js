@@ -5,7 +5,7 @@ import {
   sendPasswordResetEmail,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, limit,
+  getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, limit,
   serverTimestamp, writeBatch, connectFirestoreEmulator,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { firebaseConfig, SCHEDULE } from "./config.js";
@@ -47,6 +47,7 @@ const ICONS = {
   undo: svg(`<path d="M4 10h11a5 5 0 0 1 0 10h-3"/><path d="M8 6l-4 4 4 4"/>`),
   speaker: svg(`<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>`),
   camera: svg(`<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>`),
+  download: svg(`<path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 19h14"/>`),
   chevL: svg(`<path d="M15 6l-6 6 6 6"/>`, 2.6),
   chevR: svg(`<path d="M9 6l6 6-6 6"/>`, 2.6),
   mail: svg(`<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/>`),
@@ -744,7 +745,35 @@ function startTeacher(user) {
     go("t-home");
   };
 
-  rerender = () => { render(); renderDays(); };
+  // Aylık Excel raporu
+  let month = today().slice(0, 7);
+  const renderMonth = () => {
+    $("#monLabel").textContent = asDate(month + "-15").toLocaleDateString(locale(), { month: "long", year: "numeric" });
+    $("#monNext").disabled = month >= today().slice(0, 7);
+  };
+  const shiftMonth = (n) => {
+    const [y, m] = month.split("-").map(Number);
+    const d = new Date(Date.UTC(y, m - 1 + n, 15));
+    month = d.toISOString().slice(0, 7);
+    renderMonth();
+  };
+  $("#monPrev").onclick = () => shiftMonth(-1);
+  $("#monNext").onclick = () => { if (month < today().slice(0, 7)) shiftMonth(1); };
+  $("#exportBtn").onclick = async () => {
+    const btn = $("#exportBtn");
+    btn.disabled = true;
+    toast(t("export_wait"));
+    try {
+      await exportMonth(month);
+    } catch (e) {
+      toast(t("export_error") + e.message);
+    } finally {
+      btn.disabled = false;
+    }
+  };
+  renderMonth();
+
+  rerender = () => { render(); renderDays(); renderMonth(); };
   // Ders saati başlayınca / bitince "Canlı" göstergesi güncellensin
   let lastState = classState();
   const timer = setInterval(() => { if (classState() !== lastState) { lastState = classState(); render(); } }, 20000);
@@ -785,4 +814,57 @@ function startTeacher(user) {
       open: !closing, date, updatedAt: serverTimestamp(), updatedBy: user.uid,
     }, { merge: true }).catch((err) => toast(err.message));
   };
+}
+
+// ---------- Aylık Excel raporu (hoca) ----------
+
+const XLSX_URL = "https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs";
+
+async function exportMonth(month) {
+  const snap = await getDocs(query(collection(db, "attendance"),
+    where("date", ">=", month + "-01"), where("date", "<=", month + "-31")));
+  const recs = snap.docs.map((d) => d.data())
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.checkedInAt?.toMillis() ?? 0) - (b.checkedInAt?.toMillis() ?? 0));
+  if (!recs.length) { toast(t("export_empty")); return; }
+
+  const XLSX = await import(XLSX_URL); // sadece rapor alınırken yüklenir
+  const dates = [...new Set(recs.map((r) => r.date))].sort();
+  const students = new Map();
+  for (const r of recs) {
+    if (!students.has(r.uid)) students.set(r.uid, { name: r.name || r.email, email: r.email, byDate: {} });
+    students.get(r.uid).byDate[r.date] = r.status;
+  }
+  const list = [...students.values()].sort((a, b) => a.name.localeCompare(b.name, "tr"));
+  const mark = { approved: "✓", pending: "?", rejected: "✗" };
+  const short = (d) => asDate(d).toLocaleDateString(locale(), { day: "2-digit", month: "2-digit" });
+
+  // 1. sayfa: öğrenci × gün tablosu
+  const table = [[t("x_student"), ...dates.map(short), t("x_present"), t("x_rate")]];
+  for (const st of list) {
+    const present = dates.filter((d) => st.byDate[d] === "approved").length;
+    table.push([st.name, ...dates.map((d) => mark[st.byDate[d]] ?? ""), present, present / dates.length]);
+  }
+  table.push([], [t("x_legend")]);
+  const ws1 = XLSX.utils.aoa_to_sheet(table);
+  ws1["!cols"] = [{ wch: 24 }, ...dates.map(() => ({ wch: 6 })), { wch: 9 }, { wch: 9 }];
+  for (let r = 1; r <= list.length; r++) {
+    const cell = ws1[XLSX.utils.encode_cell({ r, c: dates.length + 2 })];
+    if (cell) cell.z = "0%";
+  }
+
+  // 2. sayfa: tüm kayıtlar
+  const status = { approved: t("pill_present"), pending: t("pill_pending"), rejected: t("pill_rejected") };
+  const rows = [[t("x_date"), t("x_day"), t("x_student"), t("x_email"), t("x_time"), t("x_status")],
+    ...recs.map((r) => [
+      asDate(r.date).toLocaleDateString(locale(), { day: "2-digit", month: "2-digit", year: "numeric" }),
+      asDate(r.date).toLocaleDateString(locale(), { weekday: "long" }),
+      r.name || r.email, r.email, fmtTime(r.checkedInAt), status[r.status] ?? r.status,
+    ])];
+  const ws2 = XLSX.utils.aoa_to_sheet(rows);
+  ws2["!cols"] = [{ wch: 12 }, { wch: 12 }, { wch: 24 }, { wch: 28 }, { wch: 11 }, { wch: 14 }];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws1, t("x_sheet1"));
+  XLSX.utils.book_append_sheet(wb, ws2, t("x_sheet2"));
+  XLSX.writeFile(wb, `${t("x_file")}-${month}.xlsx`);
 }

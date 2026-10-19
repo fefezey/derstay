@@ -237,6 +237,15 @@
       <p data-i18n="t_history_sub"></p>
     </header>
     <div class="content">
+      <div class="card export-card">
+        <div class="export-top">
+          <button id="monPrev" class="icon-btn" data-icon="chevL" aria-label="Önceki ay"></button>
+          <div class="export-title"><small data-i18n="export_t"></small><b id="monLabel"></b></div>
+          <button id="monNext" class="icon-btn" data-icon="chevR" aria-label="Sonraki ay"></button>
+        </div>
+        <button id="exportBtn" class="btn btn-yellow btn-lg"><span data-icon="download"></span><span data-i18n="export_btn"></span></button>
+        <p class="fine center" data-i18n="export_hint"></p>
+      </div>
       <div class="card stats">
         <div><span class="dot all" data-icon="calendar"></span><small data-i18n="class_days"></small><b id="thDays">0</b></div>
         <div><span class="dot ok" data-icon="users"></span><small data-i18n="avg_present"></small><b id="thAvg">0</b></div>
