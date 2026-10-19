@@ -8,9 +8,9 @@ import {
   getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, limit,
   serverTimestamp, writeBatch, connectFirestoreEmulator,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { firebaseConfig, SCHEDULE } from "./config.js";
-import { wordOfTheDay } from "./words.js";
-import { t, locale, applyStatic, setLang } from "./i18n.js";
+import { firebaseConfig, SCHEDULE } from "./config.js?v=4";
+import { wordOfTheDay } from "./words.js?v=4";
+import { t, locale, applyStatic, setLang } from "./i18n.js?v=4";
 
 // Yerelde "npm run dev" ile denerken gerçek proje yerine emülatör kullanılır
 const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
