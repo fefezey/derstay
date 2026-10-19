@@ -43,6 +43,7 @@ const ICONS = {
   info: svg(`<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>`),
   logout: svg(`<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/>`),
   undo: svg(`<path d="M4 10h11a5 5 0 0 1 0 10h-3"/><path d="M8 6l-4 4 4 4"/>`),
+  speaker: svg(`<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>`),
   camera: svg(`<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>`),
   globe: svg(`<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 3.5 5.5 3.5 8.5s-1 6-3.5 8.5c-2.5-2.5-3.5-5.5-3.5-8.5s1-6 3.5-8.5z"/>`),
 };
@@ -116,6 +117,7 @@ document.addEventListener("click", (e) => {
     setLang(l.dataset.lang);
     setTabs(tabs);
     renderPhoto();
+    if (!$("#wordModal").hidden) fillWord();
     rerender();
     return;
   }
@@ -148,7 +150,49 @@ onAuthStateChanged(auth, async (user) => {
     renderPhoto();
   }, (e) => toast(e.message));
   meIsTeacher ? startTeacher(user) : startStudent(user);
+  if (!wordShown) { wordShown = true; openWord(); } // uygulama her açıldığında günün kelimesi
 });
+
+// ---------- Günün kelimesi ----------
+
+let wordShown = false;
+
+function fillWord() {
+  const w = wordOfTheDay(today());
+  $("#wmDate").textContent = prettyDate(today());
+  $("#wmWord").textContent = w.word;
+  $("#wmType").textContent = t("type_" + w.type);
+  $("#wmTr").textContent = w.tr;
+  $("#wmEx").textContent = `“${w.example}”`;
+  $("#wmExTr").textContent = w.exampleTr;
+  return w;
+}
+
+function openWord() {
+  fillWord();
+  $("#wmSpeak").hidden = !("speechSynthesis" in window);
+  $("#wordModal").hidden = false;
+}
+
+// Telefonun kendi sesiyle İngiliz aksanında okur
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-GB";
+  u.rate = 0.9;
+  const voice = speechSynthesis.getVoices().find((v) => v.lang === "en-GB" || v.lang === "en_GB");
+  if (voice) u.voice = voice;
+  speechSynthesis.speak(u);
+}
+
+$("#wmSpeak").onclick = () => {
+  const w = wordOfTheDay(today());
+  speak(`${w.word}. ${w.example}`);
+};
+$("#wmOk").onclick = () => { window.speechSynthesis?.cancel(); $("#wordModal").hidden = true; };
+$("#wordModal").onclick = (e) => { if (e.target.id === "wordModal") $("#wmOk").click(); };
+$("#wotd").onclick = openWord;
 
 // ---------- Profil fotoğrafı ----------
 
@@ -261,13 +305,14 @@ function startStudent(user) {
   const render = () => {
     $("#sDate").textContent = prettyDate(date);
     setLive($("#sLive"), session);
-    const [word, tr, example] = wordOfTheDay(date);
+    const w = wordOfTheDay(date);
     $("#wotd").innerHTML = `
-      <div class="wotd-badge">WORD<br>OF THE<br>DAY</div>
+      <div class="wotd-badge">${t("wotd_badge")}</div>
       <div>
-        <div class="wotd-word">${esc(word)} <span>· ${esc(tr)}</span></div>
-        <div class="wotd-ex">“${esc(example)}”</div>
-      </div>`;
+        <div class="wotd-word">${esc(w.word)} <span>· ${esc(w.tr)}</span></div>
+        <div class="wotd-ex">“${esc(w.example)}”</div>
+      </div>
+      <span class="wotd-more">›</span>`;
 
     if (loaded < 2) { btn.hidden = true; status.hidden = true; return; }
     const time = record ? fmtTime(record.checkedInAt) : "";

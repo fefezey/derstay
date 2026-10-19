@@ -2,6 +2,7 @@
   --yellow: #FFD21F;
   --yellow-2: #FFE37A;
   --yellow-soft: #FFF6CC;
+  --lemon: #FCEC52; /* logodaki sarı */
   --black: #111111;
   --ink: #1b1b1b;
   --muted: #7a7a7a;
@@ -38,16 +39,22 @@ button:disabled { cursor: default; opacity: .45; }
 .fine { font-size: 12px; color: var(--muted); line-height: 1.5; }
 .center { text-align: center; }
 
-/* ---------- Logo ---------- */
+/* ---------- Logo (ENGLISH [Big Ben] TIME) ---------- */
 
-.brand { display: inline-flex; gap: 6px; align-items: baseline; font-weight: 800; font-size: 20px; letter-spacing: -.3px; color: #fff; }
-.brand .t { position: relative; }
-.brand .crown { position: absolute; width: 18px; height: 12px; top: -9px; left: 5px; color: var(--yellow); }
-.brand.dark .crown { color: var(--black); }
-.brand.dark { color: var(--black); }
-.brand.stacked { flex-direction: column; gap: 0; line-height: .95; font-size: 34px; align-items: flex-start; }
-.brand.stacked .t { margin-left: 18px; }
-.brand.stacked .crown { width: 26px; height: 17px; top: -40px; left: auto; right: -46px; transform: rotate(18deg); }
+.logo {
+  --logo-bg: var(--lemon);
+  display: inline-flex; align-items: flex-end;
+  font-family: "Jost", "Futura", "Century Gothic", sans-serif;
+  font-size: 19px; line-height: 1; letter-spacing: .02em;
+  color: var(--black); white-space: nowrap;
+}
+.logo .l1 { font-weight: 400; }
+.logo .l2 { font-weight: 700; }
+.logo .ben { width: .72em; height: 2.7em; margin: 0 .1em .1em; flex-shrink: 0; }
+.logo.xl { font-size: clamp(30px, 10.5vw, 52px); }
+.logo.on-dark { --logo-bg: var(--black); color: #fff; }
+.logo.on-dark .ben, .logo.on-dark .l2 { color: var(--yellow); }
+.logo.on-gold { --logo-bg: var(--yellow); }
 
 /* ---------- Butonlar ---------- */
 
@@ -67,49 +74,41 @@ button:disabled { cursor: default; opacity: .45; }
 
 /* ---------- Yükleniyor ---------- */
 
-.screen.loading { min-height: 100dvh; display: grid; place-items: center; background: var(--yellow); }
-.loading .brand { color: var(--black); animation: breathe 1.4s ease-in-out infinite; }
-@keyframes breathe { 50% { transform: scale(1.06); } }
+.screen.loading { min-height: 100dvh; display: grid; place-items: center; background: var(--lemon); }
+.loading .logo { animation: breathe 1.4s ease-in-out infinite; }
+@keyframes breathe { 50% { transform: scale(1.04); } }
 
 /* ---------- Giriş ---------- */
 
 .login { min-height: 100dvh; display: flex; flex-direction: column; background: #fff; }
 .splash {
-  position: relative; background: var(--yellow);
-  padding: max(48px, env(safe-area-inset-top)) 24px 0;
+  position: relative; background: var(--lemon);
+  padding: max(72px, calc(env(safe-area-inset-top) + 56px)) 20px 0;
   display: flex; flex-direction: column; align-items: center; text-align: center;
 }
-.splash .brand.stacked { align-self: center; margin-left: -18px; }
-.script {
-  position: relative; margin: 26px 0 0;
-  font-family: var(--script); font-weight: 700; font-size: 68px; line-height: 1; color: var(--black);
-  transform: rotate(-4deg);
+.splash-logo { display: flex; flex-direction: column; align-items: center; animation: rise .6s cubic-bezier(.2,1,.4,1) both; }
+@keyframes rise { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+.logo-sub {
+  margin: 12px 0 0; font-family: "Jost", sans-serif; font-weight: 700;
+  font-size: clamp(9.5px, 2.85vw, 14px); letter-spacing: .02em; white-space: nowrap;
 }
-.spark { position: absolute; width: 28px; height: 28px; right: -26px; top: -6px; }
-.splash-sub { margin: 10px 0 0; font-weight: 500; font-size: 17px; }
-.art { position: relative; width: 280px; height: 200px; margin-top: 18px; }
-.alarm { position: absolute; left: 0; bottom: 6px; width: 150px; height: 150px; animation: ring 2.4s ease-in-out infinite; transform-origin: 50% 60%; }
-@keyframes ring { 0%, 80%, 100% { transform: rotate(0); } 84% { transform: rotate(-8deg); } 88% { transform: rotate(8deg); } 92% { transform: rotate(-6deg); } 96% { transform: rotate(4deg); } }
-.bubble {
-  position: absolute; right: 0; top: 0;
-  background: var(--black); color: #fff;
-  font-family: var(--script); font-size: 27px; line-height: 1.05; text-align: left;
-  padding: 14px 18px; border-radius: 26px;
+.app-badge {
+  margin-top: 30px; display: flex; flex-direction: column; align-items: center;
+  background: var(--black); color: var(--lemon);
+  padding: 10px 26px 12px; border-radius: 22px;
+  transform: rotate(-2deg);
+  animation: rise .6s .15s cubic-bezier(.2,1,.4,1) both;
 }
-.bubble::after {
-  content: ""; position: absolute; left: 18px; bottom: -16px;
-  width: 26px; height: 20px; background: var(--black);
-  clip-path: polygon(0 0, 100% 0, 0 100%);
-}
-.hill { display: block; width: calc(100% + 48px); height: 70px; margin: -10px -24px 0; }
+.script { font-family: var(--script); font-weight: 700; font-size: 44px; line-height: 1; }
+.splash-sub { margin-top: 2px; font-weight: 500; font-size: 13px; color: #e9e9e9; }
+.hill { display: block; width: calc(100% + 40px); height: 70px; margin: 26px -20px 0; }
 .login-sheet { flex: 1; padding: 28px 24px 18px; max-width: 480px; width: 100%; margin: 0 auto; }
 .login-sheet h2 { margin: 0; font-size: 28px; font-weight: 800; }
 .login-sheet .muted { margin: 6px 0 24px; font-size: 15px; }
 .login-sheet .fine { margin-top: 18px; text-align: center; }
 .login-foot { position: relative; height: 96px; }
 .login-foot svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.login-foot .brand { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); font-size: 16px; }
-.login-foot .brand .crown { width: 14px; height: 9px; top: -7px; }
+.login-foot .logo { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); font-size: 14px; }
 
 /* ---------- Sayfa iskeleti ---------- */
 
@@ -208,6 +207,39 @@ button:disabled { cursor: default; opacity: .45; }
 .wotd-word { font-weight: 700; font-size: 18px; }
 .wotd-word span { font-weight: 500; font-size: 13px; color: var(--yellow); }
 .wotd-ex { margin-top: 2px; font-size: 13px; color: #cfcfcf; font-style: italic; }
+
+.wotd { width: 100%; text-align: left; cursor: pointer; }
+.wotd-more { margin-left: auto; font-size: 22px; color: var(--yellow); }
+
+/* ---------- Günün kelimesi penceresi ---------- */
+
+.word-modal {
+  position: fixed; inset: 0; z-index: 35;
+  background: rgba(0,0,0,.55);
+  display: flex; align-items: flex-end; justify-content: center;
+  animation: fade .2s ease both;
+}
+.word-sheet {
+  width: 100%; max-width: 520px;
+  background: var(--lemon); color: var(--black);
+  border-radius: 28px 28px 0 0;
+  padding: 22px 22px max(22px, env(safe-area-inset-bottom));
+  animation: sheet .4s cubic-bezier(.2,1.1,.4,1) both;
+}
+@keyframes sheet { from { transform: translateY(100%); } to { transform: none; } }
+.word-top { display: flex; justify-content: space-between; align-items: center; }
+.word-top .logo { font-size: 14px; }
+.word-date { font-size: 12px; font-weight: 600; text-transform: capitalize; }
+.word-kicker { display: inline-block; margin-top: 20px; font-size: 11px; font-weight: 800; letter-spacing: .12em; background: var(--black); color: var(--lemon); padding: 5px 10px; border-radius: 999px; }
+.word-sheet h2 { margin: 12px 0 0; font-family: "Jost", var(--font); font-size: 46px; line-height: 1; font-weight: 700; word-break: break-word; }
+.word-meta { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.word-type { font-size: 13px; font-weight: 600; font-style: italic; color: #4a4300; }
+.speak { display: inline-flex; align-items: center; gap: 6px; background: var(--black); color: var(--lemon); padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; }
+.speak svg { width: 16px; height: 16px; }
+.word-tr { margin: 14px 0 0; font-size: 22px; font-weight: 700; }
+.word-ex { margin: 16px 0 20px; padding: 14px 16px; background: rgba(255,255,255,.6); border-radius: 16px; border-left: 5px solid var(--black); }
+.word-ex p { margin: 0; font-size: 15px; font-weight: 600; }
+.word-ex p + p { margin-top: 4px; font-weight: 400; color: #4a4300; font-size: 14px; }
 
 /* ---------- İstatistik ---------- */
 

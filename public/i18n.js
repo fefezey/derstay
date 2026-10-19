@@ -92,6 +92,11 @@ const TEXT = {
     photo_saved: "Fotoğrafın kaydedildi ✓",
     photo_error: "Fotoğraf kaydedilemedi, başka bir fotoğraf dene.",
     photo_confirm_remove: "Fotoğrafın kaldırılsın mı?",
+    word_kicker: "GÜNÜN KELİMESİ",
+    listen: "Dinle",
+    lets_go: "Hadi derse!",
+    wotd_badge: "GÜNÜN<br>KELİMESİ",
+    type_noun: "isim", type_verb: "fiil", type_adj: "sıfat", type_adv: "zarf", type_phrase: "kalıp",
   },
   en: {
     splash_sub: "Ders (class) + Stay",
@@ -185,6 +190,11 @@ const TEXT = {
     photo_saved: "Photo saved ✓",
     photo_error: "Couldn't save the photo, try another one.",
     photo_confirm_remove: "Remove your photo?",
+    word_kicker: "WORD OF THE DAY",
+    listen: "Listen",
+    lets_go: "Let's go to class!",
+    wotd_badge: "WORD<br>OF THE<br>DAY",
+    type_noun: "noun", type_verb: "verb", type_adj: "adjective", type_adv: "adverb", type_phrase: "phrase",
   },
 };
 

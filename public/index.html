@@ -7,40 +7,67 @@
   <title>Derstayım · English Time</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Caveat:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Caveat:wght@700&family=Jost:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <symbol id="crown" viewBox="0 0 24 16">
-      <path d="M1 2l5.5 6L12 1l5.5 7L23 2l-2.5 13h-17z" fill="currentColor"/>
+    <!-- Big Ben (logodaki kule). Delikler --logo-bg rengiyle boyanır. -->
+    <symbol id="ben" viewBox="0 0 64 240">
+      <g fill="currentColor">
+        <polygon points="32,0 35,34 29,34"/>
+        <rect x="27" y="34" width="10" height="5"/>
+        <polygon points="18,78 32,39 46,78"/>
+        <rect x="15" y="78" width="34" height="5"/>
+        <rect x="17" y="83" width="30" height="20"/>
+        <rect x="13" y="103" width="38" height="5"/>
+        <polygon points="11,108 13,95 15,108"/>
+        <polygon points="49,108 51,95 53,108"/>
+        <rect x="13" y="108" width="38" height="42"/>
+        <rect x="12" y="150" width="40" height="5"/>
+        <rect x="15" y="155" width="34" height="79"/>
+        <rect x="12" y="234" width="40" height="6"/>
+      </g>
+      <g style="fill: var(--logo-bg)">
+        <rect x="30.5" y="52" width="3" height="7"/>
+        <rect x="26" y="64" width="2.5" height="7"/>
+        <rect x="35.5" y="64" width="2.5" height="7"/>
+        <rect x="21" y="87" width="5" height="13" rx="2.5"/>
+        <rect x="29.5" y="87" width="5" height="13" rx="2.5"/>
+        <rect x="38" y="87" width="5" height="13" rx="2.5"/>
+        <circle cx="32" cy="129" r="14"/>
+        <rect x="19" y="160" width="3.5" height="17"/><rect x="26.5" y="160" width="3.5" height="17"/>
+        <rect x="34" y="160" width="3.5" height="17"/><rect x="41.5" y="160" width="3.5" height="17"/>
+        <rect x="19" y="183" width="3.5" height="19"/><rect x="26.5" y="183" width="3.5" height="19"/>
+        <rect x="34" y="183" width="3.5" height="19"/><rect x="41.5" y="183" width="3.5" height="19"/>
+        <rect x="19" y="208" width="3.5" height="20"/><rect x="26.5" y="208" width="3.5" height="20"/>
+        <rect x="34" y="208" width="3.5" height="20"/><rect x="41.5" y="208" width="3.5" height="20"/>
+      </g>
+      <g fill="none" stroke="currentColor" stroke-linecap="round">
+        <circle cx="32" cy="129" r="11" stroke-width="1.4"/>
+        <path d="M32 120v2M32 136v2M23 129h2M39 129h2" stroke-width="1.4"/>
+        <path d="M32 129v-7M32 129l5 3" stroke-width="2"/>
+      </g>
+      <circle cx="32" cy="129" r="1.8" fill="currentColor"/>
     </symbol>
   </svg>
 
   <!-- Yükleniyor -->
   <section id="loading" class="screen loading">
-    <span class="brand stacked"><span>English</span><span class="t">Time<svg class="crown"><use href="#crown"/></svg></span></span>
+    <span class="logo xl" aria-label="English Time"><span class="l1">ENGLISH</span><svg class="ben" viewBox="0 0 64 240"><use href="#ben"/></svg><span class="l2">TIME</span></span>
   </section>
 
   <!-- Giriş -->
   <section id="login" class="screen login" hidden>
     <div class="splash">
       <span class="lang-switch on-yellow"><button data-lang="tr">TR</button><button data-lang="en">EN</button></span>
-      <span class="brand stacked dark"><span>English</span><span class="t">Time<svg class="crown"><use href="#crown"/></svg></span></span>
-      <h1 class="script">Derstayım<svg class="spark" viewBox="0 0 30 30"><path d="M4 16l9-2M8 6l6 6M18 3l-1 8" stroke="#111" stroke-width="3" stroke-linecap="round"/></svg></h1>
-      <p class="splash-sub" data-i18n="splash_sub"></p>
-      <div class="art">
-        <div class="bubble" data-i18n="bubble"></div>
-        <svg class="alarm" viewBox="0 0 160 160" aria-hidden="true">
-          <g fill="none" stroke="#111" stroke-width="9" stroke-linecap="round">
-            <circle cx="80" cy="88" r="50"/>
-            <path d="M80 60v30l18 12"/>
-            <path d="M45 132l-12 14M115 132l12 14"/>
-            <path d="M14 30l8 10M8 52l12 3M36 12l4 12" stroke-width="6"/>
-          </g>
-          <path d="M28 52a24 24 0 0 1 34-30z" fill="#111"/>
-          <path d="M132 52a24 24 0 0 0-34-30z" fill="#111"/>
-        </svg>
+      <div class="splash-logo">
+        <span class="logo xl" aria-label="English Time"><span class="l1">ENGLISH</span><svg class="ben" viewBox="0 0 64 240"><use href="#ben"/></svg><span class="l2">TIME</span></span>
+        <p class="logo-sub">DİL OKULU VE YURTDIŞI EĞİTİM DANIŞMANLIĞI</p>
+      </div>
+      <div class="app-badge">
+        <span class="script">Derstayım</span>
+        <span class="splash-sub" data-i18n="splash_sub"></span>
       </div>
       <svg class="hill" viewBox="0 0 400 80" preserveAspectRatio="none" aria-hidden="true">
         <path d="M0 80V40C60 10 120 60 200 40S330 0 400 30V80z" fill="#111"/>
@@ -57,7 +84,7 @@
     </div>
     <footer class="login-foot">
       <svg viewBox="0 0 400 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60V30C80 0 160 50 240 30S360 0 400 20V60z" fill="#FFD21F"/><path d="M0 60V44C90 20 170 60 260 44S370 24 400 36V60z" fill="#111"/></svg>
-      <span class="brand"><span>English</span><span class="t">Time<svg class="crown"><use href="#crown"/></svg></span></span>
+      <span class="logo on-dark" aria-label="English Time"><span class="l1">ENGLISH</span><svg class="ben" viewBox="0 0 64 240"><use href="#ben"/></svg><span class="l2">TIME</span></span>
     </footer>
   </section>
 
@@ -65,7 +92,7 @@
   <section id="s-home" class="page" hidden>
     <header class="hero">
       <div class="hero-top">
-        <span class="brand"><span>English</span><span class="t">Time<svg class="crown"><use href="#crown"/></svg></span></span>
+        <span class="logo on-dark" aria-label="English Time"><span class="l1">ENGLISH</span><svg class="ben" viewBox="0 0 64 240"><use href="#ben"/></svg><span class="l2">TIME</span></span>
         <span id="sLive" class="live"></span>
       </div>
       <h1 id="sHello"></h1>
@@ -113,7 +140,7 @@
         </button>
       </div>
 
-      <div id="wotd" class="card wotd"></div>
+      <button id="wotd" class="card wotd"></button>
     </div>
   </section>
 
@@ -137,7 +164,7 @@
   <section id="t-home" class="page" hidden>
     <header class="hero">
       <div class="hero-top">
-        <span class="brand"><span>English</span><span class="t">Time<svg class="crown"><use href="#crown"/></svg></span></span>
+        <span class="logo on-dark" aria-label="English Time"><span class="l1">ENGLISH</span><svg class="ben" viewBox="0 0 64 240"><use href="#ben"/></svg><span class="l2">TIME</span></span>
         <span id="tLive" class="live"></span>
       </div>
       <h1 id="tHello"></h1>
@@ -218,7 +245,7 @@
   <!-- Başarı ekranı -->
   <div id="success" class="success" hidden>
     <div class="success-top">
-      <span class="brand dark"><span>English</span><span class="t">Time<svg class="crown"><use href="#crown"/></svg></span></span>
+      <span class="logo on-gold" aria-label="English Time"><span class="l1">ENGLISH</span><svg class="ben" viewBox="0 0 64 240"><use href="#ben"/></svg><span class="l2">TIME</span></span>
       <button id="successClose" class="x" data-icon="x" aria-label="Kapat"></button>
     </div>
     <div class="burst">
@@ -237,6 +264,25 @@
     </div>
     <button id="successOk" class="btn btn-black btn-lg" data-i18n="ok"></button>
     <p class="goodjob">Good job! ☺</p>
+  </div>
+
+  <!-- Günün kelimesi (uygulama her açıldığında) -->
+  <div id="wordModal" class="word-modal" hidden>
+    <div class="word-sheet" role="dialog" aria-modal="true">
+      <div class="word-top">
+        <span class="logo" aria-label="English Time"><span class="l1">ENGLISH</span><svg class="ben" viewBox="0 0 64 240"><use href="#ben"/></svg><span class="l2">TIME</span></span>
+        <span id="wmDate" class="word-date"></span>
+      </div>
+      <span class="word-kicker" data-i18n="word_kicker"></span>
+      <h2 id="wmWord"></h2>
+      <div class="word-meta">
+        <span id="wmType" class="word-type"></span>
+        <button id="wmSpeak" class="speak"><span data-icon="speaker"></span><span data-i18n="listen"></span></button>
+      </div>
+      <p id="wmTr" class="word-tr"></p>
+      <div class="word-ex"><p id="wmEx"></p><p id="wmExTr"></p></div>
+      <button id="wmOk" class="btn btn-black btn-lg" data-i18n="lets_go"></button>
+    </div>
   </div>
 
   <!-- Fotoğrafı büyütme (hoca) -->
