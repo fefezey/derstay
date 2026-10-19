@@ -47,6 +47,8 @@ const ICONS = {
   undo: svg(`<path d="M4 10h11a5 5 0 0 1 0 10h-3"/><path d="M8 6l-4 4 4 4"/>`),
   speaker: svg(`<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>`),
   camera: svg(`<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>`),
+  chevL: svg(`<path d="M15 6l-6 6 6 6"/>`, 2.6),
+  chevR: svg(`<path d="M9 6l6 6-6 6"/>`, 2.6),
   mail: svg(`<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/>`),
   back: svg(`<path d="M19 12H5M11 18l-6-6 6-6"/>`),
   globe: svg(`<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 3.5 5.5 3.5 8.5s-1 6-3.5 8.5c-2.5-2.5-3.5-5.5-3.5-8.5s1-6 3.5-8.5z"/>`),
@@ -61,6 +63,12 @@ applyStatic();
 // Tarih her zaman Türkiye saatine göre (sunucu da aynısını kontrol eder)
 const today = () => new Date().toLocaleDateString("sv-SE", { timeZone: TZ });
 const asDate = (d) => new Date(d + "T12:00:00");
+// "YYYY-AA-GG" tarihine n gün ekler
+const shiftDate = (d, n) => {
+  const x = new Date(d + "T12:00:00Z");
+  x.setUTCDate(x.getUTCDate() + n);
+  return x.toISOString().slice(0, 10);
+};
 const prettyDate = (d) => asDate(d).toLocaleDateString(locale(), { weekday: "long", day: "numeric", month: "long" });
 const fmtTime = (ts) => ts
   ? ts.toDate().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", timeZone: TZ })
@@ -131,7 +139,7 @@ function toast(msg) {
 
 // ---------- Ekranlar ve alt menü ----------
 
-const SCREENS = ["loading", "login", "auth", "verify", "s-home", "s-history", "t-home", "profile"];
+const SCREENS = ["loading", "login", "auth", "verify", "s-home", "s-history", "t-home", "t-history", "profile"];
 let tabs = [];
 let me = null, meIsTeacher = false, myPhoto = null, profileUnsub = null;
 let rerender = () => {}; // dil değişince açık ekranı yeniden çizer
@@ -588,6 +596,7 @@ function renderHistory(items) {
 function startTeacher(user) {
   setTabs([
     { id: "t-home", label: "tab_attendance", icon: "list" },
+    { id: "t-history", label: "tab_history", icon: "history" },
     { id: "profile", label: "profile", icon: "user" },
   ]);
   go("t-home");
@@ -596,8 +605,9 @@ function startTeacher(user) {
   const search = $("#search");
   const name = firstName(user);
 
-  let date, session, rows = [];
+  let date, session, rows = [], dayUnsubs = [], days = [];
   const seen = new Set();
+  unsubs.push(() => dayUnsubs.forEach((u) => u()));
   const photos = new Map(); // uid → öğrencinin yüklediği fotoğraf ("" = yok)
 
   const loadPhotos = () => {
@@ -612,8 +622,13 @@ function startTeacher(user) {
 
   const render = () => {
     $("#tHello").textContent = hello(name, "hello_teacher");
+    const isToday = date === today();
+    $("#tDayLabel").textContent = t(isToday ? "today_label" : "past_label");
     $("#tDate").textContent = prettyDate(date);
-    $("#tWindow").textContent = windowText();
+    $("#tWindow").textContent = isToday ? windowText() : t("past_day_note");
+    $("#tListTitle").textContent = t(isToday ? "live_list" : "list_title");
+    $("#dayNext").disabled = isToday;
+    $("#tLive").hidden = !isToday;
     setLive($("#tLive"), session);
 
     const n = (s) => rows.filter((r) => r.status === s).length;
@@ -629,6 +644,7 @@ function startTeacher(user) {
     const toggle = $("#toggleSession");
     toggle.textContent = t(closed ? "reopen" : "close");
     toggle.classList.toggle("danger", !closed);
+    toggle.hidden = !isToday; // geçmiş günün yoklaması kapatılamaz/açılamaz
 
     const q = search.value.trim().toLocaleLowerCase("tr-TR");
     const shown = q ? rows.filter((r) => (r.name || r.email).toLocaleLowerCase("tr-TR").includes(q)) : rows;
@@ -660,16 +676,19 @@ function startTeacher(user) {
           }).join("");
   };
 
-  const watch = () => {
-    clearSubs();
-    date = today();
+  // Seçili günün yoklamasını dinle (varsayılan: bugün)
+  const watch = (d = today()) => {
+    dayUnsubs.forEach((u) => u());
+    dayUnsubs = [];
+    date = d;
     session = null;
     rows = [];
-    unsubs.push(onSnapshot(doc(db, "sessions", date), (s) => {
+    search.value = "";
+    dayUnsubs.push(onSnapshot(doc(db, "sessions", date), (s) => {
       session = s.data() ?? null; render();
     }, (e) => toast(e.message)));
     const q = query(collection(db, "attendance"), where("date", "==", date));
-    unsubs.push(onSnapshot(q, (snap) => {
+    dayUnsubs.push(onSnapshot(q, (snap) => {
       rows = snap.docs
         .map((d) => ({ id: d.id, ...d.data() }))
         .sort((a, b) => (a.checkedInAt?.toMillis() ?? Infinity) - (b.checkedInAt?.toMillis() ?? Infinity));
@@ -680,7 +699,52 @@ function startTeacher(user) {
   };
   watch();
   search.oninput = render;
-  rerender = render;
+  $("#dayPrev").onclick = () => watch(shiftDate(date, -1));
+  $("#dayNext").onclick = () => { if (date < today()) watch(shiftDate(date, 1)); };
+
+  // Geçmiş: son 60 günün kayıtları, gün gün özet
+  const renderDays = () => {
+    const withData = days.filter((x) => x.total > 0);
+    $("#thDays").textContent = withData.length;
+    $("#thAvg").textContent = withData.length
+      ? Math.round((withData.reduce((sum, x) => sum + x.approved, 0) / withData.length) * 10) / 10 : 0;
+    $("#thWait").textContent = withData.reduce((sum, x) => sum + x.pending, 0);
+    $("#thList").innerHTML = withData.length === 0
+      ? `<li class="empty">${t("t_history_empty")}</li>`
+      : withData.map((x) => {
+          const d = asDate(x.date);
+          return `
+          <li class="day-row" data-date="${x.date}">
+            <span class="datebox"><b>${d.getDate()}</b><small>${d.toLocaleDateString(locale(), { month: "short" })}</small></span>
+            <div class="who">
+              <div class="name">${d.toLocaleDateString(locale(), { weekday: "long" })}</div>
+              <div class="time">${t("day_summary", { a: x.approved, p: x.pending, r: x.rejected })}</div>
+            </div>
+            <span class="count">${x.approved}<small>/${x.total}</small></span>
+            <span class="chev">${ICONS.chevR}</span>
+          </li>`;
+        }).join("");
+  };
+  unsubs.push(onSnapshot(query(collection(db, "attendance"), where("date", ">=", shiftDate(today(), -59))), (snap) => {
+    const byDate = new Map();
+    for (const d of snap.docs) {
+      const r = d.data();
+      const x = byDate.get(r.date) ?? { date: r.date, total: 0, approved: 0, pending: 0, rejected: 0 };
+      x.total++;
+      x[r.status]++;
+      byDate.set(r.date, x);
+    }
+    days = [...byDate.values()].sort((a, b) => b.date.localeCompare(a.date));
+    renderDays();
+  }, (e) => toast(e.message)));
+  $("#thList").onclick = (e) => {
+    const row = e.target.closest("[data-date]");
+    if (!row) return;
+    watch(row.dataset.date);
+    go("t-home");
+  };
+
+  rerender = () => { render(); renderDays(); };
   // Ders saati başlayınca / bitince "Canlı" göstergesi güncellensin
   let lastState = classState();
   const timer = setInterval(() => { if (classState() !== lastState) { lastState = classState(); render(); } }, 20000);
