@@ -20,9 +20,6 @@ Daha az uğraş, daha güvenilir yoklama. 🎯
 - ✅ Öğretmen onayı ve canlı liste
 - 🔒 Yetkiye dayalı güvenli kayıt sistemi
 
-## 📸 Ekranlar
-
-![Derstayım ekranları](docs/ekran-goruntuleri/ozet.png)
 
 ## ⚙️ Nasıl Çalışır
 
