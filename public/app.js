@@ -5,10 +5,10 @@ import {
   sendPasswordResetEmail,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, limit,
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, limit,
   serverTimestamp, writeBatch, connectFirestoreEmulator,
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { firebaseConfig } from "./config.js";
+import { firebaseConfig, SCHEDULE } from "./config.js";
 import { wordOfTheDay } from "./words.js";
 import { t, locale, applyStatic, setLang } from "./i18n.js";
 
@@ -49,11 +49,6 @@ const ICONS = {
   camera: svg(`<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>`),
   mail: svg(`<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/>`),
   back: svg(`<path d="M19 12H5M11 18l-6-6 6-6"/>`),
-  plus: svg(`<path d="M12 5v14M5 12h14"/>`, 2.6),
-  edit: svg(`<path d="M4 20h4L19 9l-4-4L4 16z"/>`),
-  trash: svg(`<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>`),
-  book: svg(`<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5"/>`),
-  chevron: svg(`<path d="M9 6l6 6-6 6"/>`),
   globe: svg(`<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 3.5 5.5 3.5 8.5s-1 6-3.5 8.5c-2.5-2.5-3.5-5.5-3.5-8.5s1-6 3.5-8.5z"/>`),
 };
 
@@ -72,31 +67,42 @@ const fmtTime = (ts) => ts
   : "…";
 const fmtStamp = (ts) => ts.toDate().toLocaleDateString(locale(), { day: "numeric", month: "long", year: "numeric", timeZone: TZ })
   + " • " + fmtTime(ts);
+const nowHM = () => new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
+// ---------- Ders saatleri ----------
+
 const EARLY = 15; // yoklama ders başlamadan kaç dakika önce açılır (kurallarla aynı)
 const DOW = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
+let schedule = SCHEDULE; // settings/schedule varsa onunla değişir
 const nowDow = () => DOW[new Date().toLocaleDateString("en-US", { weekday: "short", timeZone: TZ })];
 const nowMin = () => {
   const [h, m] = new Date().toLocaleTimeString("en-GB", { timeZone: TZ }).split(":").map(Number);
   return h * 60 + m;
 };
 const fmtMin = (m) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
-const toMin = (v) => { const [h, m] = v.split(":").map(Number); return h * 60 + m; };
-// 1 = Pazartesi … 7 = Pazar (1 Ocak 2024 Pazartesi)
-const dayName = (d, weekday = "long") => new Date(2024, 0, d).toLocaleDateString(locale(), { weekday });
-const lessonTime = (l) => `${fmtMin(l.startMin)} – ${fmtMin(l.endMin)}`;
+const dayName = (d) => new Date(2024, 0, d).toLocaleDateString(locale(), { weekday: "long" }); // 1 Ocak 2024 Pazartesi
+const windowText = () => t("window_val", { start: fmtMin(schedule.startMin), end: fmtMin(schedule.endMin) });
 
-let lessons = []; // tüm dersler (canlı)
-const todaysLessons = () => lessons.filter((l) => l.days.includes(nowDow())).sort((a, b) => a.startMin - b.startMin);
-function lessonState(l) {
-  if (!l.days.includes(nowDow())) return "off";
+// "off" = bugün ders yok, "before" = henüz açılmadı, "open" = yoklama açık, "after" = ders bitti
+function classState() {
+  if (!schedule.days.includes(nowDow())) return "off";
   const m = nowMin();
-  if (m < l.startMin - EARLY) return "upcoming";
-  if (m > l.endMin) return "done";
-  return "live";
+  if (m < schedule.startMin - EARLY) return "before";
+  if (m > schedule.endMin) return "after";
+  return "open";
 }
-const activeLesson = () => todaysLessons().find((l) => lessonState(l) === "live") ?? null;
+function nextClassDay() {
+  const d = nowDow();
+  for (let i = 1; i <= 7; i++) {
+    const next = ((d - 1 + i) % 7) + 1;
+    if (schedule.days.includes(next)) return dayName(next);
+  }
+  return "";
+}
+function hoursText() {
+  const days = schedule.days.join() === "1,2,3,4,5" ? t("weekdays") : schedule.days.map(dayName).join(", ");
+  return `${days} ${fmtMin(schedule.startMin)} – ${fmtMin(schedule.endMin)}`;
+}
 
-const nowHM = () => new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const firstName = (u) => (u.displayName ?? "").split(" ")[0];
 const initials = (name) => (name || "?").split(/\s+/).filter(Boolean).slice(0, 2)
@@ -125,16 +131,13 @@ function toast(msg) {
 
 // ---------- Ekranlar ve alt menü ----------
 
-const SCREENS = ["loading", "login", "auth", "verify", "s-home", "s-history", "lessons", "t-today", "t-home", "lesson-form", "profile"];
+const SCREENS = ["loading", "login", "auth", "verify", "s-home", "s-history", "t-home", "profile"];
 let tabs = [];
 let me = null, meIsTeacher = false, myPhoto = null, profileUnsub = null;
 let rerender = () => {}; // dil değişince açık ekranı yeniden çizer
-let onLessons = () => {}; // dersler değişince açık ekranları yeniden çizer
-let lessonsUnsub = null;
-let current = null;
+let current = null, scheduleUnsub = null;
 
 function go(id) {
-  if (id === "t-home" && current !== "t-home" && !pickLesson()) return; // gösterilecek ders yoksa
   current = id;
   for (const s of SCREENS) $("#" + s).hidden = s !== id;
   $("#tabbar").hidden = !tabs.some((tab) => tab.id === id);
@@ -158,6 +161,7 @@ document.addEventListener("click", (e) => {
     if (!$("#wordModal").hidden) fillWord();
     if (current === "auth") renderAuth();
     if (current === "verify") $("#verifyText").innerHTML = t("verify_text", { email: esc(me?.email ?? "") });
+    if (me) $("#pHours").textContent = hoursText();
     rerender();
     return;
   }
@@ -177,8 +181,8 @@ $("#logout").onclick = () => { if (confirm(t("confirm_logout"))) logout(); };
 function logout() {
   clearSubs();
   profileUnsub?.();
-  lessonsUnsub?.();
-  profileUnsub = lessonsUnsub = null;
+  scheduleUnsub?.();
+  profileUnsub = scheduleUnsub = null;
   signOut(auth);
 }
 
@@ -189,10 +193,9 @@ async function handleUser(user) {
   const seq = ++authSeq;
   clearSubs();
   profileUnsub?.();
-  lessonsUnsub?.();
-  profileUnsub = lessonsUnsub = null;
+  scheduleUnsub?.();
+  profileUnsub = scheduleUnsub = null;
   rerender = () => {};
-  onLessons = () => {};
   me = user;
   myPhoto = null;
   $("#success").hidden = true;
@@ -211,23 +214,19 @@ async function handleUser(user) {
   go("loading");
   meIsTeacher = (await getDoc(doc(db, "teachers", user.uid))).exists();
   if (seq !== authSeq) return;
+  // Ders saati ayarı (yoksa config.js'teki varsayılan)
+  scheduleUnsub = onSnapshot(doc(db, "settings", "schedule"), (s) => {
+    schedule = s.exists() ? s.data() : SCHEDULE;
+    $("#pHours").textContent = hoursText();
+    rerender();
+  }, () => {});
   fillProfile(user, meIsTeacher);
   profileUnsub = onSnapshot(doc(db, "profiles", user.uid), (s) => {
     myPhoto = s.data()?.photo ?? "";
     renderPhoto();
   }, (e) => toast(e.message));
-
-  let first = true;
-  lessonsUnsub = onSnapshot(collection(db, "lessons"), (snap) => {
-    lessons = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    if (first) {
-      first = false;
-      meIsTeacher ? startTeacher(user) : startStudent(user);
-      if (!wordShown) { wordShown = true; openWord(); } // uygulama her açıldığında günün kelimesi
-    } else {
-      onLessons();
-    }
-  }, (e) => toast(e.message));
+  meIsTeacher ? startTeacher(user) : startStudent(user);
+  if (!wordShown) { wordShown = true; openWord(); } // uygulama her açıldığında günün kelimesi
 }
 
 // ---------- E-posta ile giriş ----------
@@ -430,8 +429,9 @@ function greeting() {
 const hello = (name, key = "hello") => t(name ? key : "hello_noname", { g: greeting(), name });
 
 function setLive(el, session) {
-  const closed = session?.open === false;
-  el.textContent = t(closed ? "closed" : "live");
+  const outside = classState() !== "open";
+  const closed = outside || session?.open === false;
+  el.textContent = t(outside ? "not_class_time" : closed ? "closed" : "live");
   el.classList.toggle("closed", closed);
 }
 
@@ -440,7 +440,6 @@ function setLive(el, session) {
 function startStudent(user) {
   setTabs([
     { id: "s-home", label: "tab_home", icon: "home" },
-    { id: "lessons", label: "tab_lessons", icon: "calendar" },
     { id: "s-history", label: "tab_history", icon: "history" },
     { id: "profile", label: "profile", icon: "user" },
   ]);
@@ -450,15 +449,17 @@ function startStudent(user) {
   const status = $("#sStatus");
   const name = firstName(user);
 
-  let date, active, session, record, loaded, celebrate = false, history = [], lessonSubs = [];
-
+  let lastState = classState();
   const tick = () => {
     $("#sHello").textContent = hello(name);
-    const clock = $("#sClock");
-    if (clock) clock.textContent = nowHM();
-    // Ders başladıysa / bittiyse ya da gün değiştiyse yeniden bağlan
-    if (date !== today() || (activeLesson()?.id ?? null) !== (active?.id ?? null)) watchLesson();
+    $("#sClock").textContent = nowHM();
+    if (classState() !== lastState) { lastState = classState(); render(); } // ders saati başladı / bitti
   };
+  tick();
+  const timer = setInterval(tick, 1000);
+  unsubs.push(() => clearInterval(timer));
+
+  let date, session, record, loaded, celebrate = false, history = [];
 
   const setStatus = (kind, icon, title, text) => {
     btn.hidden = true;
@@ -469,26 +470,10 @@ function startStudent(user) {
     $("#sStatusText").textContent = text;
   };
 
-  const renderCard = () => {
-    const next = todaysLessons().find((l) => lessonState(l) === "upcoming");
-    const l = active ?? next;
-    const card = $("#sLesson");
-    card.classList.toggle("idle", !active);
-    card.innerHTML = `
-      <span class="icon-box">${ICONS[active ? "book" : "clock"]}</span>
-      <div class="today-text">
-        <small>${t(active ? "active_lesson" : next ? "next_lesson" : "today")}</small>
-        <b>${l ? esc(l.name) : t("no_active")}</b>
-        <span>${l ? `${lessonTime(l)} · ${esc(t("teacher_of", { name: l.teacherName }))}` : t("no_more_today")}</span>
-        ${!active && next ? `<span>${t("opens_at", { time: fmtMin(Math.max(0, next.startMin - EARLY)) })}</span>` : ""}
-      </div>
-      <span id="sClock" class="today-clock">${nowHM()}</span>`;
-  };
-
   const render = () => {
-    setLive($("#sLive"), active ? session : { open: false });
-    $("#sLive").hidden = !active;
-    renderCard();
+    $("#sDate").textContent = prettyDate(date);
+    $("#sWindow").textContent = windowText();
+    setLive($("#sLive"), session);
     const w = wordOfTheDay(date);
     $("#wotd").innerHTML = `
       <div class="wotd-badge">${t("wotd_badge")}</div>
@@ -498,10 +483,6 @@ function startStudent(user) {
       </div>
       <span class="wotd-more">›</span>`;
 
-    if (!active) {
-      setStatus("closed", "clock", t("st_wait_t"), t("st_wait"));
-      return;
-    }
     if (loaded < 2) { btn.hidden = true; status.hidden = true; return; }
     const time = record ? fmtTime(record.checkedInAt) : "";
     if (record?.status === "approved") {
@@ -510,6 +491,12 @@ function startStudent(user) {
       setStatus("rejected", "x", t("st_rejected_t"), t("st_rejected", { time }));
     } else if (record) {
       setStatus("pending", "clock", t("st_pending_t"), t("st_pending", { time }));
+    } else if (classState() === "off") {
+      setStatus("closed", "calendar", t("st_off_t"), t("st_off", { day: nextClassDay(), time: fmtMin(schedule.startMin) }));
+    } else if (classState() === "before") {
+      setStatus("closed", "clock", t("st_before_t"), t("st_before", { time: fmtMin(schedule.startMin - EARLY) }));
+    } else if (classState() === "after") {
+      setStatus("closed", "clock", t("st_after_t"), t("st_after", { time: fmtMin(schedule.endMin) }));
     } else if (session?.open === false) {
       setStatus("closed", "x", t("st_closed_t"), t("st_closed"));
     } else {
@@ -525,55 +512,37 @@ function startStudent(user) {
     }
   };
 
-  // Aktif dersin yoklama oturumunu ve öğrencinin kaydını dinle
-  function watchLesson() {
-    lessonSubs.forEach((u) => u());
-    lessonSubs = [];
+  const watch = () => {
+    for (const u of unsubs.splice(1)) u(); // saat dışındaki dinleyicileri kapat
     date = today();
-    active = activeLesson();
     session = record = null;
     loaded = 0;
-    if (active) {
-      const key = `${date}_${active.id}`;
-      lessonSubs.push(onSnapshot(doc(db, "sessions", key), (s) => {
-        session = s.data() ?? null; loaded++; render();
-      }, (e) => toast(e.message)));
-      lessonSubs.push(onSnapshot(doc(db, "attendance", `${key}_${user.uid}`), (s) => {
-        record = s.exists() ? s.data() : null; loaded++; render();
-      }, (e) => toast(e.message)));
-    }
+    unsubs.push(onSnapshot(doc(db, "sessions", date), (s) => {
+      session = s.data() ?? null; loaded++; render();
+    }, (e) => toast(e.message)));
+    unsubs.push(onSnapshot(doc(db, "attendance", `${date}_${user.uid}`), (s) => {
+      record = s.exists() ? s.data() : null; loaded++; render();
+    }, (e) => toast(e.message)));
+    unsubs.push(onSnapshot(query(collection(db, "attendance"), where("uid", "==", user.uid), limit(60)),
+      (snap) => { history = snap.docs.map((d) => d.data()); renderHistory(history); },
+      (e) => toast(e.message)));
     render();
-  }
-  unsubs.push(() => lessonSubs.forEach((u) => u()));
-
-  unsubs.push(onSnapshot(query(collection(db, "attendance"), where("uid", "==", user.uid), limit(60)),
-    (snap) => { history = snap.docs.map((d) => d.data()); renderHistory(history); },
-    (e) => toast(e.message)));
-
-  watchLesson();
-  tick();
-  const timer = setInterval(tick, 1000);
-  unsubs.push(() => clearInterval(timer));
-
-  onLessons = () => { watchLesson(); renderLessons(); };
-  rerender = () => { tick(); render(); renderHistory(history); renderLessons(); };
-  renderLessons();
+  };
+  watch();
+  rerender = () => { tick(); render(); renderHistory(history); };
 
   btn.onclick = async () => {
-    const lesson = activeLesson();
-    if (date !== today() || lesson?.id !== active?.id) { watchLesson(); return; } // ders/gün değiştiyse
+    if (date !== today()) { watch(); return; } // sayfa gece açık kaldıysa
     btn.disabled = true;
     navigator.vibrate?.(30);
     try {
       celebrate = true;
-      await setDoc(doc(db, "attendance", `${date}_${lesson.id}_${user.uid}`), {
+      await setDoc(doc(db, "attendance", `${date}_${user.uid}`), {
         uid: user.uid,
         name: user.displayName ?? "",
         email: user.email ?? "",
         photo: user.photoURL ?? "",
         date,
-        lessonId: lesson.id,
-        lessonName: lesson.name,
         checkedInAt: serverTimestamp(),
         status: "pending",
       });
@@ -591,8 +560,7 @@ function startStudent(user) {
 }
 
 function renderHistory(items) {
-  items.sort((a, b) => b.date.localeCompare(a.date)
-    || (b.checkedInAt?.toMillis() ?? 0) - (a.checkedInAt?.toMillis() ?? 0));
+  items.sort((a, b) => b.date.localeCompare(a.date));
   const n = (s) => items.filter((r) => r.status === s).length;
   $("#hOk").textContent = n("approved");
   $("#hWait").textContent = n("pending");
@@ -603,148 +571,51 @@ function renderHistory(items) {
     ? `<li class="empty">${t("history_empty")}</li>`
     : items.map((r) => {
         const d = asDate(r.date);
-        const weekday = d.toLocaleDateString(locale(), { weekday: "long" });
         return `
         <li>
           <span class="datebox"><b>${d.getDate()}</b><small>${d.toLocaleDateString(locale(), { month: "short" })}</small></span>
           <div class="who">
-            <div class="name">${esc(r.lessonName || weekday)}</div>
-            <div class="time">${r.lessonName ? weekday + " · " : ""}${t("checked_in_at", { time: fmtTime(r.checkedInAt) })}</div>
+            <div class="name">${d.toLocaleDateString(locale(), { weekday: "long" })}</div>
+            <div class="time">${t("checked_in_at", { time: fmtTime(r.checkedInAt) })}</div>
           </div>
           ${pill(r.status)}
         </li>`;
       }).join("");
 }
 
-// ---------- Ders programı (öğrenci ve hoca) ----------
-
-function renderLessons() {
-  $("#addLesson").hidden = !meIsTeacher;
-  $("#lToday").textContent = prettyDate(today());
-  const badge = { live: "b_live", upcoming: "b_upcoming", done: "b_done" };
-  const today_ = todaysLessons();
-  $("#lTodayList").innerHTML = today_.length
-    ? today_.map((l) => {
-        const st = lessonState(l);
-        return `
-        <button class="lesson-row s-${st}" data-lesson="${esc(l.id)}">
-          <span class="icon-box ${st === "live" ? "" : "grey"}">${ICONS.book}</span>
-          <span class="lr-text"><b>${esc(l.name)}</b><span>${lessonTime(l)} · ${esc(l.teacherName)}</span>
-            <span class="days">${[1, 2, 3, 4, 5, 6, 7].map((d) => `<i class="${l.days.includes(d) ? "on" : ""}">${dayName(d, "short")}</i>`).join("")}</span></span>
-          <em class="badge s-${st}">${t(badge[st])}</em>
-        </button>`;
-      }).join("")
-    : `<p class="muted small pad">${t("no_lessons_today")}</p>`;
-
-  $("#lWeek").innerHTML = lessons.length
-    ? [1, 2, 3, 4, 5, 6, 7].map((d) => {
-        const ls = lessons.filter((l) => l.days.includes(d)).sort((a, b) => a.startMin - b.startMin);
-        if (!ls.length) return "";
-        return `<div class="day-group${d === nowDow() ? " is-today" : ""}"><h4>${dayName(d)}</h4>${ls.map((l) => `
-          <button class="mini-row" data-lesson="${esc(l.id)}"><b>${fmtMin(l.startMin)}</b><span>${esc(l.name)}</span><small>${fmtMin(l.endMin)}</small></button>`).join("")}</div>`;
-      }).join("")
-    : `<div class="card empty-card"><span class="big-icon">${ICONS.calendar}</span><b>${t("no_lessons_t")}</b>
-       <p>${t(meIsTeacher ? "no_lessons_teacher" : "no_lessons_student")}</p></div>`;
-
-  // Hoca derse dokununca ders detayı açılır
-  if (meIsTeacher) for (const b of document.querySelectorAll("#lessons [data-lesson]")) b.onclick = () => openLesson(b.dataset.lesson);
-  $("#lessons").classList.toggle("readonly", !meIsTeacher);
-}
-
 // ---------- Hoca ----------
-
-let detailId = null;
-let openLesson = () => {};
-const pickLesson = () => {
-  if (!meIsTeacher) return null;
-  if (detailId && lessons.some((l) => l.id === detailId)) return detailId;
-  const today_ = todaysLessons();
-  const l = activeLesson() ?? today_.find((x) => lessonState(x) === "upcoming") ?? today_.at(-1);
-  if (l) { openLesson(l.id, false); return l.id; }
-  toast(t("no_today_t"));
-  return null;
-};
 
 function startTeacher(user) {
   setTabs([
-    { id: "t-today", label: "tab_home", icon: "home" },
-    { id: "lessons", label: "tab_lessons", icon: "calendar" },
     { id: "t-home", label: "tab_attendance", icon: "list" },
     { id: "profile", label: "profile", icon: "user" },
   ]);
-  detailId = null;
-  go("t-today");
+  go("t-home");
 
   const list = $("#tList");
   const search = $("#search");
   const name = firstName(user);
 
-  let date, session, rows = [], detailSubs = [];
+  let date, session, rows = [];
   const seen = new Set();
   const photos = new Map(); // uid → öğrencinin yüklediği fotoğraf ("" = yok)
-  unsubs.push(() => detailSubs.forEach((u) => u()));
-
-  const renderToday = () => {
-    $("#tHello").textContent = hello(name, "hello_teacher");
-    const today_ = todaysLessons();
-    const label = { live: "st_live_l", upcoming: "st_upcoming_l", done: "st_done_l" };
-    $("#tTodayList").innerHTML = today_.length
-      ? today_.map((l) => {
-          const st = lessonState(l);
-          return `
-          <button class="lesson-row s-${st}" data-lesson="${esc(l.id)}">
-            <span class="icon-box ${st === "live" ? "" : "grey"}">${ICONS.clock}</span>
-            <span class="lr-text"><b>${esc(l.name)}</b><span>${lessonTime(l)}</span><em class="st s-${st}">${t(label[st])}</em></span>
-            <span class="chev">${ICONS.chevron}</span>
-          </button>`;
-        }).join("")
-      : `<div class="empty-card"><span class="big-icon">${ICONS.calendar}</span><b>${t("no_today_t")}</b>
-         <p>${t("no_today")}</p><button id="addFirst" class="btn btn-yellow">${ICONS.plus}${t("add_lesson")}</button></div>`;
-    for (const b of document.querySelectorAll("#tTodayList [data-lesson]")) b.onclick = () => openLesson(b.dataset.lesson);
-    $("#addFirst")?.addEventListener("click", () => openForm());
-  };
 
   const loadPhotos = () => {
     for (const r of rows) {
       if (!r.uid || photos.has(r.uid)) continue;
       photos.set(r.uid, "");
       getDoc(doc(db, "profiles", r.uid))
-        .then((s) => { if (s.data()?.photo) { photos.set(r.uid, s.data().photo); renderList(); } })
+        .then((s) => { if (s.data()?.photo) { photos.set(r.uid, s.data().photo); render(); } })
         .catch(() => {});
     }
   };
 
-  const lesson = () => lessons.find((l) => l.id === detailId);
-
-  const renderHead = () => {
-    const l = lesson();
-    if (!l) return;
-    const live = lessonState(l) === "live";
-    $("#tLive").hidden = !live;
-    setLive($("#tLive"), session);
+  const render = () => {
+    $("#tHello").textContent = hello(name, "hello_teacher");
     $("#tDate").textContent = prettyDate(date);
-    $("#tLessonCard").innerHTML = `
-      <span class="icon-box black">${ICONS.calendar}</span>
-      <div><b>${esc(l.name)}</b><span>${lessonTime(l)}</span><span>${esc(t("teacher_of", { name: l.teacherName }))}</span></div>`;
-    $("#segInfo").innerHTML = `
-      <div class="card info-list">
-        <div><span>${ICONS.clock}</span><small>${t("i_time")}</small><b>${lessonTime(l)}</b></div>
-        <div><span>${ICONS.calendar}</span><small>${t("i_days")}</small><b>${l.days.map((d) => dayName(d)).join(", ")}</b></div>
-        <div><span>${ICONS.user}</span><small>${t("i_teacher")}</small><b>${esc(l.teacherName)}</b></div>
-        <div><span>${ICONS.list}</span><small>${t("i_window")}</small><b>${t("i_window_val", { a: fmtMin(Math.max(0, l.startMin - EARLY)), b: fmtMin(l.endMin) })}</b></div>
-      </div>
-      <div class="row-btns">
-        <button id="editLesson" class="btn btn-outline">${ICONS.edit}${t("edit")}</button>
-        <button id="delLesson" class="btn btn-outline danger">${ICONS.trash}${t("delete")}</button>
-      </div>`;
-    $("#editLesson").onclick = () => openForm(l.id);
-    $("#delLesson").onclick = async () => {
-      if (!confirm(t("confirm_delete", { name: l.name }))) return;
-      await deleteDoc(doc(db, "lessons", l.id)).catch((e) => toast(e.message));
-    };
-  };
+    $("#tWindow").textContent = windowText();
+    setLive($("#tLive"), session);
 
-  const renderList = () => {
     const n = (s) => rows.filter((r) => r.status === s).length;
     $("#nOk").textContent = n("approved");
     $("#nWait").textContent = n("pending");
@@ -789,67 +660,31 @@ function startTeacher(user) {
           }).join("");
   };
 
-  // Ders detayını aç: o dersin bugünkü yoklamasını dinle
-  openLesson = (id, show = true) => {
-    if (id !== detailId || date !== today()) {
-      detailSubs.forEach((u) => u());
-      detailSubs = [];
-      detailId = id;
-      date = today();
-      session = null;
-      rows = [];
-      search.value = "";
-      const key = `${date}_${id}`;
-      detailSubs.push(onSnapshot(doc(db, "sessions", key), (s) => {
-        session = s.data() ?? null; renderHead(); renderList();
-      }, (e) => toast(e.message)));
-      detailSubs.push(onSnapshot(query(collection(db, "attendance"), where("date", "==", date), where("lessonId", "==", id)), (snap) => {
-        rows = snap.docs
-          .map((d) => ({ id: d.id, ...d.data() }))
-          .sort((a, b) => (a.checkedInAt?.toMillis() ?? Infinity) - (b.checkedInAt?.toMillis() ?? Infinity));
-        loadPhotos();
-        renderList();
-      }, (e) => toast(e.message)));
-    }
-    setSeg("list");
-    renderHead();
-    renderList();
-    if (show) go("t-home");
+  const watch = () => {
+    clearSubs();
+    date = today();
+    session = null;
+    rows = [];
+    unsubs.push(onSnapshot(doc(db, "sessions", date), (s) => {
+      session = s.data() ?? null; render();
+    }, (e) => toast(e.message)));
+    const q = query(collection(db, "attendance"), where("date", "==", date));
+    unsubs.push(onSnapshot(q, (snap) => {
+      rows = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (a.checkedInAt?.toMillis() ?? Infinity) - (b.checkedInAt?.toMillis() ?? Infinity));
+      loadPhotos();
+      render();
+    }, (e) => toast(e.message)));
+    render();
   };
-
-  const setSeg = (k) => {
-    for (const b of document.querySelectorAll("[data-seg]")) b.classList.toggle("on", b.dataset.seg === k);
-    $("#segList").hidden = k !== "list";
-    $("#segInfo").hidden = k !== "info";
-  };
-  for (const b of document.querySelectorAll("[data-seg]")) b.onclick = () => setSeg(b.dataset.seg);
-
-  search.oninput = renderList;
-  $("#addLesson").onclick = () => openForm();
-
-  const tick = () => {
-    renderToday();
-    if (current === "lessons") renderLessons();
-    if (detailId) renderHead();
-  };
-  const timer = setInterval(tick, 20000);
+  watch();
+  search.oninput = render;
+  rerender = render;
+  // Ders saati başlayınca / bitince "Canlı" göstergesi güncellensin
+  let lastState = classState();
+  const timer = setInterval(() => { if (classState() !== lastState) { lastState = classState(); render(); } }, 20000);
   unsubs.push(() => clearInterval(timer));
-
-  onLessons = () => {
-    renderToday();
-    renderLessons();
-    if (detailId && !lesson()) {
-      detailSubs.forEach((u) => u());
-      detailSubs = [];
-      detailId = null;
-      if (current === "t-home") go("lessons");
-    } else if (detailId) {
-      renderHead();
-    }
-  };
-  rerender = () => { renderToday(); renderLessons(); if (detailId) { renderHead(); renderList(); } renderFormText(); };
-  renderToday();
-  renderLessons();
 
   const decide = (id, status) => updateDoc(doc(db, "attendance", id), {
     status, decidedAt: serverTimestamp(), decidedBy: user.uid,
@@ -882,69 +717,8 @@ function startTeacher(user) {
   $("#toggleSession").onclick = async () => {
     const closing = session?.open !== false;
     if (closing && !confirm(t("confirm_close"))) return;
-    await setDoc(doc(db, "sessions", `${date}_${detailId}`), {
-      open: !closing, date, lessonId: detailId, updatedAt: serverTimestamp(), updatedBy: user.uid,
+    await setDoc(doc(db, "sessions", date), {
+      open: !closing, date, updatedAt: serverTimestamp(), updatedBy: user.uid,
     }, { merge: true }).catch((err) => toast(err.message));
   };
 }
-
-// ---------- Ders formu (hoca) ----------
-
-let formId = null, formBack = "lessons";
-
-function renderFormText() {
-  const l = lessons.find((x) => x.id === formId);
-  $("#formTitle").textContent = t(l ? "f_edit" : "f_new");
-  $("#formSave").textContent = t(l ? "f_save" : "f_add");
-  for (const sp of document.querySelectorAll("#dayPick [data-day]")) sp.textContent = dayName(Number(sp.dataset.day), "short");
-}
-
-function openForm(id = null) {
-  const l = lessons.find((x) => x.id === id);
-  formId = l ? id : null;
-  formBack = current;
-  const f = $("#lessonForm");
-  f.name.value = l?.name ?? "";
-  f.start.value = l ? fmtMin(l.startMin) : "10:00";
-  f.end.value = l ? fmtMin(l.endMin) : "11:30";
-  $("#dayPick").innerHTML = [1, 2, 3, 4, 5, 6, 7].map((d) =>
-    `<label><input type="checkbox" name="days" value="${d}" ${l?.days.includes(d) ? "checked" : ""}><span data-day="${d}"></span></label>`).join("");
-  renderFormText();
-  go("lesson-form");
-}
-
-$("#formBack").onclick = () => go(formBack);
-$("#lessonForm").onsubmit = async (e) => {
-  e.preventDefault();
-  const fd = new FormData(e.target);
-  const days = fd.getAll("days").map(Number);
-  const startMin = toMin(fd.get("start"));
-  const endMin = toMin(fd.get("end"));
-  if (!days.length) return toast(t("f_need_day"));
-  if (endMin <= startMin) return toast(t("f_bad_time"));
-  const l = lessons.find((x) => x.id === formId);
-  const data = {
-    name: fd.get("name").trim(),
-    teacherId: l?.teacherId ?? me.uid,
-    teacherName: l?.teacherName ?? firstName(me),
-    days, startMin, endMin,
-    updatedAt: serverTimestamp(),
-  };
-  const btn = $("#formSave");
-  btn.disabled = true;
-  try {
-    if (l) {
-      await updateDoc(doc(db, "lessons", l.id), data);
-      openLesson(l.id);
-    } else {
-      const ref = await addDoc(collection(db, "lessons"), data);
-      if (!lessons.some((x) => x.id === ref.id)) lessons.push({ id: ref.id, ...data }); // dinleyici gelmeden açabilmek için
-      openLesson(ref.id);
-    }
-    toast(t("f_saved"));
-  } catch (err) {
-    toast(err.message);
-  } finally {
-    btn.disabled = false;
-  }
-};

@@ -124,7 +124,16 @@
       <p data-i18n="s_sub"></p>
     </header>
     <div class="content">
-      <button id="sLesson" class="card today" data-go="lessons"></button>
+      <div class="card today">
+        <span class="icon-box" data-icon="calendar"></span>
+        <div class="today-text">
+          <small data-i18n="today_label"></small>
+          <b>English Time</b>
+          <span id="sDate"></span>
+          <span id="sWindow" class="window"></span>
+        </div>
+        <span id="sClock" class="today-clock"></span>
+      </div>
 
       <button id="checkin" class="checkin" hidden>
         <span class="checkin-row"><span class="check-dot" data-icon="check"></span><span data-i18n="checkin"></span></span>
@@ -145,15 +154,15 @@
       </button>
 
       <div class="tiles">
-        <button class="tile" data-go="lessons">
-          <span data-icon="calendar"></span>
-          <b data-i18n="my_lessons"></b>
-          <small data-i18n="my_lessons_sub"></small>
-        </button>
         <button class="tile" data-go="s-history">
           <span data-icon="history"></span>
           <b data-i18n="history"></b>
           <small data-i18n="history_sub"></small>
+        </button>
+        <button class="tile" data-go="profile">
+          <span data-icon="user"></span>
+          <b data-i18n="my_profile"></b>
+          <small data-i18n="my_profile_sub"></small>
         </button>
       </div>
 
@@ -177,65 +186,24 @@
     </div>
   </section>
 
-  <!-- Ders programı (öğrenci ve hoca) -->
-  <section id="lessons" class="page" hidden>
-    <header class="hero small">
-      <div class="title-row">
-        <h1 data-i18n="schedule"></h1>
-        <button id="addLesson" class="pill-btn" hidden><span data-icon="plus"></span><span data-i18n="new_lesson"></span></button>
-      </div>
-      <p data-i18n="schedule_sub"></p>
-    </header>
-    <div class="content">
-      <div class="card list-card">
-        <div class="card-head"><h3 data-i18n="today"></h3><span id="lToday" class="muted small"></span></div>
-        <div id="lTodayList"></div>
-      </div>
-      <h3 class="section-title" data-i18n="weekly"></h3>
-      <div id="lWeek" class="week"></div>
-    </div>
-  </section>
-
-  <!-- Hoca: Bugünkü dersler -->
-  <section id="t-today" class="page" hidden>
+  <!-- Hoca: Yoklama -->
+  <section id="t-home" class="page" hidden>
     <header class="hero">
       <div class="hero-top">
         <span class="logo on-dark" aria-label="English Time"><span class="l1">ENGLISH</span><svg class="ben" viewBox="0 0 64 240"><use href="#ben"/></svg><span class="l2">TIME</span></span>
+        <span id="tLive" class="live"></span>
       </div>
       <h1 id="tHello"></h1>
       <p data-i18n="t_sub"></p>
     </header>
     <div class="content">
-      <div class="card list-card">
-        <div class="card-head"><h3 data-i18n="todays_lessons"></h3><button class="link" data-go="lessons" data-i18n="all"></button></div>
-        <div id="tTodayList"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Hoca: Ders detayı -->
-  <section id="t-home" class="page" hidden>
-    <header class="hero small">
-      <div class="title-row">
-        <button class="icon-btn" data-go="t-today" data-icon="back" aria-label="Geri"></button>
-        <h1 data-i18n="lesson_detail"></h1>
-        <span id="tLive" class="live"></span>
-      </div>
-    </header>
-    <div class="content">
-      <div id="tLessonCard" class="yellow-card"></div>
-      <div class="seg">
-        <button data-seg="list" class="on" data-i18n="att_list"></button>
-        <button data-seg="info" data-i18n="lesson_info"></button>
-      </div>
-      <div id="segInfo" class="seg-pane" hidden></div>
-      <div id="segList" class="seg-pane">
       <div class="card lesson">
         <div class="lesson-head">
           <span class="icon-box" data-icon="clock"></span>
           <div>
             <b data-i18n="today_label"></b>
             <span id="tDate" class="muted"></span>
+            <span id="tWindow" class="window"></span>
           </div>
         </div>
         <div class="stats inline">
@@ -255,29 +223,6 @@
         <input id="search" type="search" data-i18n-ph="search" autocomplete="off">
       </label>
       <ul id="tList" class="rows"></ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- Hoca: Ders ekle / düzenle -->
-  <section id="lesson-form" class="page" hidden>
-    <header class="hero small">
-      <div class="title-row">
-        <button id="formBack" class="icon-btn" data-icon="back" aria-label="Geri"></button>
-        <h1 id="formTitle"></h1>
-      </div>
-    </header>
-    <div class="content">
-      <form id="lessonForm" class="card form pad">
-        <label><span data-i18n="f_name"></span><input name="name" required maxlength="60" data-i18n-ph="f_name_ph"></label>
-        <div class="two">
-          <label><span data-i18n="f_start"></span><input name="start" type="time" required></label>
-          <label><span data-i18n="f_end"></span><input name="end" type="time" required></label>
-        </div>
-        <fieldset class="day-pick"><legend data-i18n="f_days"></legend><div id="dayPick"></div></fieldset>
-        <p class="hint"><span data-icon="clock"></span><span data-i18n="f_hint"></span></p>
-        <button id="formSave" class="btn btn-yellow btn-lg" type="submit"></button>
-      </form>
     </div>
   </section>
 
@@ -312,6 +257,7 @@
       <ul class="menu">
         <li><span data-icon="shield"></span><span data-i18n="role"></span><em id="pRole"></em></li>
         <li id="pStatRow"><span data-icon="check"></span><span data-i18n="approved_count"></span><em id="pStat"></em></li>
+        <li><span data-icon="calendar"></span><span data-i18n="class_hours"></span><em id="pHours"></em></li>
         <li><span data-icon="clock"></span><span data-i18n="timezone"></span><em data-i18n="timezone_val"></em></li>
         <li><span data-icon="info"></span><span data-i18n="app"></span><em>Derstayım</em></li>
         <li><span data-icon="globe"></span><span data-i18n="language"></span>
