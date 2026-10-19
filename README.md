@@ -55,6 +55,10 @@ Teknoloji: düz HTML/CSS/JS + Firebase (Authentication, Firestore, Hosting). Sun
 
 Kurallar Google sunucusunda çalışır; tarayıcıyı kurcalamak işe yaramaz.
 
+## 🖨️ Afiş ve hoca rehberi
+
+[`docs/Derstayim-Afis-ve-Hoca-Rehberi.pdf`](docs/Derstayim-Afis-ve-Hoca-Rehberi.pdf): 1. sayfa sınıf kapısına asılacak QR kodlu afiş, 2. sayfa hoca için kısa kullanım rehberi (A4).
+
 ## 🗂️ Proje Yapısı
 
 ```
