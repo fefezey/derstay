@@ -31,15 +31,15 @@ service cloud.firestore {
       return string(t.year()) + '-' + pad(t.month()) + '-' + pad(t.day());
     }
 
-    // Gece yarısından beri geçen dakika
-    function nowMin() {
+    // Şu an ders saati mi? Varsayılan: hafta içi 18:50–22:00 (public/config.js ile aynı).
+    // İstenirse settings/schedule belgesiyle değiştirilebilir (günler 1 = Pazartesi … 7 = Pazar,
+    // dakika cinsinden başlangıç/bitiş). Yoklama 15 dk önce açılır.
+    function classNow() {
       let t = nowTR();
-      return t.hours() * 60 + t.minutes();
-    }
-
-    // 1 = Pazartesi … 7 = Pazar
-    function todayDow() {
-      return nowTR().dayOfWeek();
+      let m = t.hours() * 60 + t.minutes();
+      let path = /databases/$(database)/documents/settings/schedule;
+      let s = exists(path) ? get(path).data : { 'days': [1, 2, 3, 4, 5], 'startMin': 1130, 'endMin': 1320 };
+      return t.dayOfWeek() in s.days && m >= s.startMin - 15 && m <= s.endMin;
     }
 
     // Hoca "Yoklamayı kapat" demediyse yoklama açıktır
@@ -48,76 +48,67 @@ service cloud.firestore {
       return !exists(path) || get(path).data.open == true;
     }
 
-    // Ders bugün var mı ve şu an yoklama penceresinde mi?
-    // (ders başlamadan 15 dk önce açılır, ders bitince kapanır)
-    function lessonNow(lessonId, lessonName) {
-      let l = get(/databases/$(database)/documents/lessons/$(lessonId)).data;
-      return lessonName == l.name
-        && todayDow() in l.days
-        && nowMin() >= l.startMin - 15
-        && nowMin() <= l.endMin;
-    }
-
-    function validLesson(d) {
-      return d.keys().hasOnly(['name', 'teacherId', 'teacherName', 'days', 'startMin', 'endMin', 'updatedAt'])
-        && d.name is string && d.name.size() > 0 && d.name.size() <= 60
-        && d.teacherId is string
-        && d.teacherName is string && d.teacherName.size() <= 60
-        && d.days is list && d.days.size() > 0 && d.days.size() <= 7
-        && d.startMin is int && d.endMin is int
-        && d.startMin >= 0 && d.endMin <= 1439 && d.startMin < d.endMin;
-    }
-
     match /teachers/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
       allow write: if false;
     }
 
-    // lessons/{id} → { name, teacherId, teacherName, days: [1..7], startMin, endMin }
-    match /lessons/{lessonId} {
+    // settings/schedule → { days: [1..5], startMin, endMin } (isteğe bağlı; yoksa varsayılan saat)
+    match /settings/schedule {
       allow read: if signedIn();
-      allow create: if isTeacher()
-        && validLesson(request.resource.data)
-        && request.resource.data.teacherId == request.auth.uid;
-      allow update: if isTeacher() && validLesson(request.resource.data);
-      allow delete: if isTeacher();
+      allow write: if isTeacher()
+        && request.resource.data.keys().hasOnly(['days', 'startMin', 'endMin'])
+        && request.resource.data.days is list && request.resource.data.days.size() > 0
+        && request.resource.data.startMin is int && request.resource.data.endMin is int
+        && request.resource.data.startMin >= 0 && request.resource.data.endMin <= 1439
+        && request.resource.data.startMin < request.resource.data.endMin;
     }
 
-    // sessions/{tarih_ders} → { open: true/false }
+    // sessions/{tarih} → { open: true/false }
     match /sessions/{sid} {
       allow read: if signedIn();
       allow write: if isTeacher();
     }
 
-    // attendance/{tarih_ders_uid}
+    // profiles/{uid} → { photo: "data:image/jpeg;base64,...", updatedAt }
+    // Fotoğrafı sadece sahibi değiştirir; sahibi ve hocalar görür.
+    match /profiles/{uid} {
+      allow read: if isTeacher() || (signedIn() && request.auth.uid == uid);
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['photo', 'updatedAt'])
+        && request.resource.data.photo is string
+        && request.resource.data.photo.size() < 200000
+        && request.resource.data.photo.matches('^data:image/jpeg;base64,.+')
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // attendance/{tarih_uid}
     match /attendance/{id} {
-      // Hoca hepsini görür; öğrenci sadece kendi kayıtlarını
-      allow get: if isTeacher()
-        || (signedIn() && id.matches('.*_' + request.auth.uid));
-      allow list: if isTeacher()
+      // Hoca hepsini görür; öğrenci sadece kendi kayıtlarını (geçmiş dahil)
+      allow read: if isTeacher()
+        || (signedIn() && id.matches('.*_' + request.auth.uid))
         || (signedIn() && resource.data.uid == request.auth.uid);
 
-      // Öğrenci: sadece kendi adına, sadece bugün ve ders saatinde,
-      // sadece sunucu saatiyle, "bekliyor" durumunda ve yoklama açıksa.
+      // Öğrenci: sadece kendi adına, sadece bugün ve ders saatinde, sadece sunucu
+      // saatiyle, "bekliyor" durumunda ve yoklama açıksa kayıt açabilir.
       // E-postası doğrulanmamış hesap giriş yapamaz.
-      // Belge kimliği sabit olduğu için aynı derse ikinci kez giriş yapılamaz.
+      // Belge kimliği sabit olduğu için aynı gün ikinci kez giriş yapılamaz.
       allow create: if signedIn()
         && request.auth.token.email_verified == true
         && request.resource.data.keys().hasOnly(
-             ['uid', 'name', 'email', 'photo', 'date', 'lessonId', 'lessonName', 'checkedInAt', 'status'])
+             ['uid', 'name', 'email', 'photo', 'date', 'checkedInAt', 'status'])
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.name == request.auth.token.get('name', '')
         && request.resource.data.email == request.auth.token.get('email', '')
         && request.resource.data.photo is string
         && request.resource.data.photo.matches('^$|^https://[a-z0-9.-]+\\.googleusercontent\\.com/.{1,500}$')
-        && request.resource.data.lessonId is string
-        && request.resource.data.lessonId.matches('^[A-Za-z0-9]{1,40}$')
         && request.resource.data.date == todayTR()
         && request.resource.data.checkedInAt == request.time
         && request.resource.data.status == 'pending'
-        && id == todayTR() + '_' + request.resource.data.lessonId + '_' + request.auth.uid
-        && lessonNow(request.resource.data.lessonId, request.resource.data.lessonName)
-        && sessionOpen(todayTR() + '_' + request.resource.data.lessonId);
+        && id == todayTR() + '_' + request.auth.uid
+        && classNow()
+        && sessionOpen(todayTR());
 
       // Onay / ret sadece hocada; giriş saati ve isim değiştirilemez
       allow update: if isTeacher()
