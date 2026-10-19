@@ -31,6 +31,7 @@ Daha az uğraş, daha güvenilir yoklama. 🎯
 3. Hoca kendi telefonunda listeyi canlı görür: **Onayla / Reddet** ya da **Bekleyenlerin hepsini onayla**.
 4. Hoca **Yoklamayı kapat** deyince o gün kimse giriş yapamaz.
 5. Öğrenci **Geçmiş** sekmesinde eski kayıtlarını, **Profil**'de bilgilerini görür.
+6. Uygulama **Türkçe** ve **İngilizce**: giriş ekranındaki ve Profil'deki **TR | EN** düğmesiyle değişir, seçim telefonda hatırlanır.
 
 Teknoloji: düz HTML/CSS/JS + Firebase (Authentication, Firestore, Hosting). Sunucu kurulumu yok, ücretsiz kotada çalışır.
 
@@ -51,7 +52,8 @@ Kurallar Google sunucusunda çalışır; tarayıcıyı kurcalamak işe yaramaz.
 ## 🗂️ Proje Yapısı
 
 ```
-public/            Uygulama (index.html, app.js, style.css, config.js, words.js = günün kelimesi)
+public/            Uygulama (index.html, app.js, style.css, config.js,
+                   words.js = günün kelimesi, i18n.js = Türkçe/İngilizce metinler)
 firestore.rules    Güvenlik kuralları
 test/              Kural testleri (Firebase emülatörü ile)
 docs/              Ekran görüntüleri

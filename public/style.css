@@ -306,6 +306,15 @@ button:disabled { cursor: default; opacity: .45; }
 .menu em { font-style: normal; color: var(--muted); font-size: 13px; }
 .menu-btn { display: flex; align-items: center; gap: 14px; width: 100%; font-weight: 600; color: var(--red); }
 
+/* ---------- Dil seçimi ---------- */
+
+.lang-switch { display: inline-flex; padding: 3px; border-radius: 999px; background: #F1F1F1; gap: 2px; }
+.lang-switch button { padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.lang-switch button.on { background: var(--black); color: var(--yellow); }
+.lang-switch.on-yellow { position: absolute; top: max(14px, env(safe-area-inset-top)); right: 16px; background: rgba(0,0,0,.08); }
+.lang-switch.on-yellow button { color: var(--black); }
+.lang-switch.on-yellow button.on { color: var(--yellow); }
+
 /* ---------- Alt menü ---------- */
 
 .tabbar {

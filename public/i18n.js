@@ -1,0 +1,197 @@
+// Türkçe / İngilizce metinler. Yeni bir metin eklerken iki dile de ekleyin.
+const TEXT = {
+  tr: {
+    splash_sub: "Ders + Stay (kalmak)",
+    bubble: "Geldim,<br>kaydoldum,<br>dersteyim!",
+    welcome: "Hoş Geldin!",
+    login_desc: "Derstayım'a giriş yapmak için Google hesabını kullan.",
+    login_btn: "Google ile giriş yap",
+    login_fine: "Giriş saatin sunucu saatiyle kaydedilir.<br>Sadece kendi hesabınla yoklama verebilirsin.",
+    login_error: "Giriş yapılamadı: ",
+    s_sub: "Bugün derse hazır mısın?",
+    today_label: "Bugünkü yoklama",
+    checkin: "Geldim",
+    checkin_sub: "Yoklama için dokun",
+    history: "Yoklama Geçmişi",
+    history_sub: "Kayıtlarını incele",
+    history_last: "Son 60 kaydın",
+    my_profile: "Profilim",
+    my_profile_sub: "Bilgilerini gör",
+    present: "Geldi",
+    pending: "Bekleyen",
+    rejected_short: "Ret",
+    t_sub: "Bugünün yoklamasını yönetebilirsin.",
+    attended: "Katılan",
+    total: "Toplam",
+    approve_all: "Hepsini onayla",
+    approve_all_n: "Hepsini onayla ({n})",
+    close: "Yoklamayı kapat",
+    reopen: "Yeniden aç",
+    confirm_close: "Yoklama kapansın mı? Bundan sonra kimse giriş yapamaz.",
+    live_list: "Canlı Liste",
+    search: "Öğrenci ara...",
+    profile: "Profil",
+    role: "Rol",
+    role_teacher: "Hoca",
+    role_student: "Öğrenci",
+    approved_count: "Onaylı katılım",
+    days: "{n} gün",
+    day_one: "{n} gün",
+    timezone: "Saat dilimi",
+    timezone_val: "Türkiye (UTC+3)",
+    app: "Uygulama",
+    language: "Dil",
+    logout: "Çıkış Yap",
+    confirm_logout: "Çıkış yapılsın mı?",
+    footer: "English Time · Dil Okulu ve Yurtdışı Eğitim Danışmanlığı",
+    success_title: "Geldin!",
+    success_text: "Yoklaman başarıyla kaydedildi.",
+    checkin_time: "Kayıt zamanı",
+    server_time: "(Sunucu saati)",
+    ok: "Tamam",
+    morning: "Günaydın",
+    day: "Merhaba",
+    evening: "İyi akşamlar",
+    hello: "{g} {name} 👋",
+    hello_teacher: "{g} {name} Hoca 👋",
+    hello_noname: "{g} 👋",
+    live: "Canlı",
+    closed: "Kapalı",
+    st_approved_t: "Dersteyim!",
+    st_approved: "{time} · Hocan onayladı",
+    st_rejected_t: "Onaylanmadı",
+    st_rejected: "{time} · Bir yanlışlık varsa hocanla konuş",
+    st_pending_t: "Onay bekleniyor",
+    st_pending: "{time} · Kaydın alındı",
+    st_closed_t: "Yoklama kapandı",
+    st_closed: "Bugün için artık giriş alınmıyor",
+    checkin_error: "Giriş kaydedilemedi. Yoklama kapanmış veya zaten giriş yapmış olabilirsin.",
+    pill_present: "Geldi",
+    pill_pending: "Bekliyor",
+    pill_rejected: "Reddedildi",
+    approve: "Onayla",
+    reject: "Reddet",
+    undo: "Geri al",
+    tab_home: "Ana Sayfa",
+    tab_history: "Geçmiş",
+    tab_attendance: "Yoklama",
+    history_empty: "<b>Henüz kaydın yok</b>Derse geldiğinde \"Geldim\"e bas, burada görünsün.",
+    checked_in_at: "Giriş {time}",
+    t_empty: "<b>Henüz kimse gelmedi</b>Öğrenciler \"Geldim\"e bastıkça burada belirecek.",
+    t_noresult: "<b>Sonuç yok</b>Aramayla eşleşen öğrenci bulunamadı.",
+  },
+  en: {
+    splash_sub: "Ders (class) + Stay",
+    bubble: "I'm here,<br>checked in,<br>in class!",
+    welcome: "Welcome!",
+    login_desc: "Sign in with your Google account to use Derstayım.",
+    login_btn: "Sign in with Google",
+    login_fine: "Your check-in time is recorded with the server clock.<br>You can only check in with your own account.",
+    login_error: "Sign-in failed: ",
+    s_sub: "Ready for class today?",
+    today_label: "Today's attendance",
+    checkin: "I'm here",
+    checkin_sub: "Tap to check in",
+    history: "Attendance History",
+    history_sub: "See your records",
+    history_last: "Your last 60 records",
+    my_profile: "My Profile",
+    my_profile_sub: "View your details",
+    present: "Present",
+    pending: "Pending",
+    rejected_short: "Rejected",
+    t_sub: "Manage today's attendance.",
+    attended: "Present",
+    total: "Total",
+    approve_all: "Approve all",
+    approve_all_n: "Approve all ({n})",
+    close: "Close attendance",
+    reopen: "Reopen",
+    confirm_close: "Close attendance? No one will be able to check in after this.",
+    live_list: "Live List",
+    search: "Search students...",
+    profile: "Profile",
+    role: "Role",
+    role_teacher: "Teacher",
+    role_student: "Student",
+    approved_count: "Approved check-ins",
+    days: "{n} days",
+    day_one: "{n} day",
+    timezone: "Time zone",
+    timezone_val: "Turkey (UTC+3)",
+    app: "App",
+    language: "Language",
+    logout: "Log Out",
+    confirm_logout: "Log out?",
+    footer: "English Time · Language School & Study Abroad Consultancy",
+    success_title: "You're here!",
+    success_text: "Your attendance has been recorded.",
+    checkin_time: "Check-in time",
+    server_time: "(Server time)",
+    ok: "OK",
+    morning: "Good morning",
+    day: "Hello",
+    evening: "Good evening",
+    hello: "{g}, {name} 👋",
+    hello_teacher: "{g}, {name} 👋",
+    hello_noname: "{g} 👋",
+    live: "Live",
+    closed: "Closed",
+    st_approved_t: "You're in class!",
+    st_approved: "{time} · Approved by your teacher",
+    st_rejected_t: "Not approved",
+    st_rejected: "{time} · Talk to your teacher if this is a mistake",
+    st_pending_t: "Waiting for approval",
+    st_pending: "{time} · Check-in received",
+    st_closed_t: "Attendance closed",
+    st_closed: "No more check-ins today",
+    checkin_error: "Check-in failed. Attendance may be closed, or you have already checked in.",
+    pill_present: "Present",
+    pill_pending: "Pending",
+    pill_rejected: "Rejected",
+    approve: "Approve",
+    reject: "Reject",
+    undo: "Undo",
+    tab_home: "Home",
+    tab_history: "History",
+    tab_attendance: "Attendance",
+    history_empty: "<b>No records yet</b>Tap \"I'm here\" when you come to class and it will show up here.",
+    checked_in_at: "Checked in {time}",
+    t_empty: "<b>Nobody has checked in yet</b>Students will appear here as they tap \"I'm here\".",
+    t_noresult: "<b>No results</b>No student matches your search.",
+  },
+};
+
+const KEY = "derstayim.lang";
+
+function initialLang() {
+  try {
+    const saved = localStorage.getItem(KEY);
+    if (saved in TEXT) return saved;
+  } catch {}
+  return "tr";
+}
+
+export let lang = initialLang();
+
+export const locale = () => (lang === "en" ? "en-GB" : "tr-TR");
+
+export function t(key, vars = {}) {
+  const s = TEXT[lang][key] ?? TEXT.tr[key] ?? key;
+  return s.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
+}
+
+// Sayfadaki sabit metinleri seçili dile çevirir
+export function applyStatic(root = document) {
+  document.documentElement.lang = lang;
+  for (const el of root.querySelectorAll("[data-i18n]")) el.innerHTML = t(el.dataset.i18n);
+  for (const el of root.querySelectorAll("[data-i18n-ph]")) el.placeholder = t(el.dataset.i18nPh);
+  for (const b of root.querySelectorAll("[data-lang]")) b.classList.toggle("on", b.dataset.lang === lang);
+}
+
+export function setLang(next) {
+  if (!(next in TEXT)) return;
+  lang = next;
+  try { localStorage.setItem(KEY, next); } catch {}
+  applyStatic();
+}

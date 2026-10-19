@@ -25,11 +25,12 @@
   <!-- Giriş -->
   <section id="login" class="screen login" hidden>
     <div class="splash">
+      <span class="lang-switch on-yellow"><button data-lang="tr">TR</button><button data-lang="en">EN</button></span>
       <span class="brand stacked dark"><span>English</span><span class="t">Time<svg class="crown"><use href="#crown"/></svg></span></span>
       <h1 class="script">Derstayım<svg class="spark" viewBox="0 0 30 30"><path d="M4 16l9-2M8 6l6 6M18 3l-1 8" stroke="#111" stroke-width="3" stroke-linecap="round"/></svg></h1>
-      <p class="splash-sub">Ders + Stay (kalmak)</p>
+      <p class="splash-sub" data-i18n="splash_sub"></p>
       <div class="art">
-        <div class="bubble">Geldim,<br>kaydoldum,<br>dersteyim!</div>
+        <div class="bubble" data-i18n="bubble"></div>
         <svg class="alarm" viewBox="0 0 160 160" aria-hidden="true">
           <g fill="none" stroke="#111" stroke-width="9" stroke-linecap="round">
             <circle cx="80" cy="88" r="50"/>
@@ -46,13 +47,13 @@
       </svg>
     </div>
     <div class="login-sheet">
-      <h2>Hoş Geldin!</h2>
-      <p class="muted">Derstayım'a giriş yapmak için Google hesabını kullan.</p>
+      <h2 data-i18n="welcome"></h2>
+      <p class="muted" data-i18n="login_desc"></p>
       <button id="loginBtn" class="btn btn-yellow btn-lg">
         <svg class="g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#111" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>
-        Google ile giriş yap
+        <span data-i18n="login_btn"></span>
       </button>
-      <p class="fine">Giriş saatin sunucu saatiyle kaydedilir.<br>Sadece kendi hesabınla yoklama verebilirsin.</p>
+      <p class="fine" data-i18n="login_fine"></p>
     </div>
     <footer class="login-foot">
       <svg viewBox="0 0 400 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60V30C80 0 160 50 240 30S360 0 400 20V60z" fill="#FFD21F"/><path d="M0 60V44C90 20 170 60 260 44S370 24 400 36V60z" fill="#111"/></svg>
@@ -68,13 +69,13 @@
         <span id="sLive" class="live"></span>
       </div>
       <h1 id="sHello"></h1>
-      <p>Bugün derse hazır mısın?</p>
+      <p data-i18n="s_sub"></p>
     </header>
     <div class="content">
       <div class="card today">
         <span class="icon-box" data-icon="calendar"></span>
         <div class="today-text">
-          <small>Bugünkü yoklama</small>
+          <small data-i18n="today_label"></small>
           <b>English Time</b>
           <span id="sDate"></span>
         </div>
@@ -82,8 +83,8 @@
       </div>
 
       <button id="checkin" class="checkin" hidden>
-        <span class="checkin-row"><span class="check-dot" data-icon="check"></span>Geldim</span>
-        <span class="checkin-sub">Yoklama için dokun</span>
+        <span class="checkin-row"><span class="check-dot" data-icon="check"></span><span data-i18n="checkin"></span></span>
+        <span class="checkin-sub" data-i18n="checkin_sub"></span>
       </button>
       <div id="sStatus" class="status-card" hidden>
         <span id="sStatusIcon" class="status-icon"></span>
@@ -96,13 +97,13 @@
       <div class="tiles">
         <button class="tile" data-go="s-history">
           <span data-icon="history"></span>
-          <b>Yoklama Geçmişi</b>
-          <small>Kayıtlarını incele</small>
+          <b data-i18n="history"></b>
+          <small data-i18n="history_sub"></small>
         </button>
         <button class="tile" data-go="profile">
           <span data-icon="user"></span>
-          <b>Profilim</b>
-          <small>Bilgilerini gör</small>
+          <b data-i18n="my_profile"></b>
+          <small data-i18n="my_profile_sub"></small>
         </button>
       </div>
 
@@ -113,14 +114,14 @@
   <!-- Öğrenci: Geçmiş -->
   <section id="s-history" class="page" hidden>
     <header class="hero small">
-      <h1>Yoklama Geçmişi</h1>
-      <p>Son 60 kaydın</p>
+      <h1 data-i18n="history"></h1>
+      <p data-i18n="history_last"></p>
     </header>
     <div class="content">
       <div class="card stats">
-        <div><span class="dot ok" data-icon="check"></span><small>Geldi</small><b id="hOk">0</b></div>
-        <div><span class="dot wait" data-icon="clock"></span><small>Bekleyen</small><b id="hWait">0</b></div>
-        <div><span class="dot no" data-icon="x"></span><small>Ret</small><b id="hNo">0</b></div>
+        <div><span class="dot ok" data-icon="check"></span><small data-i18n="present"></small><b id="hOk">0</b></div>
+        <div><span class="dot wait" data-icon="clock"></span><small data-i18n="pending"></small><b id="hWait">0</b></div>
+        <div><span class="dot no" data-icon="x"></span><small data-i18n="rejected_short"></small><b id="hNo">0</b></div>
       </div>
       <ul id="hList" class="rows"></ul>
     </div>
@@ -134,21 +135,21 @@
         <span id="tLive" class="live"></span>
       </div>
       <h1 id="tHello"></h1>
-      <p>Bugünün yoklamasını yönetebilirsin.</p>
+      <p data-i18n="t_sub"></p>
     </header>
     <div class="content">
       <div class="card lesson">
         <div class="lesson-head">
           <span class="icon-box" data-icon="clock"></span>
           <div>
-            <b>Bugünkü yoklama</b>
+            <b data-i18n="today_label"></b>
             <span id="tDate" class="muted"></span>
           </div>
         </div>
         <div class="stats inline">
-          <div><span class="dot ok" data-icon="check"></span><small>Katılan</small><b id="nOk">0</b></div>
-          <div><span class="dot wait" data-icon="clock"></span><small>Bekleyen</small><b id="nWait">0</b></div>
-          <div><span class="dot all" data-icon="users"></span><small>Toplam</small><b id="nAll">0</b></div>
+          <div><span class="dot ok" data-icon="check"></span><small data-i18n="attended"></small><b id="nOk">0</b></div>
+          <div><span class="dot wait" data-icon="clock"></span><small data-i18n="pending"></small><b id="nWait">0</b></div>
+          <div><span class="dot all" data-icon="users"></span><small data-i18n="total"></small><b id="nAll">0</b></div>
         </div>
         <div class="lesson-actions">
           <button id="approveAll" class="btn btn-yellow">Hepsini onayla</button>
@@ -156,10 +157,10 @@
         </div>
       </div>
 
-      <h3 class="section-title">Canlı Liste</h3>
+      <h3 class="section-title" data-i18n="live_list"></h3>
       <label class="search">
         <span data-icon="search"></span>
-        <input id="search" type="search" placeholder="Öğrenci ara..." autocomplete="off">
+        <input id="search" type="search" data-i18n-ph="search" autocomplete="off">
       </label>
       <ul id="tList" class="rows"></ul>
     </div>
@@ -168,7 +169,7 @@
   <!-- Profil (ikisi için ortak) -->
   <section id="profile" class="page" hidden>
     <header class="hero profile-hero">
-      <h1>Profil</h1>
+      <h1 data-i18n="profile"></h1>
       <div class="me">
         <span id="pAvatar" class="avatar xl"></span>
         <div>
@@ -179,13 +180,15 @@
     </header>
     <div class="content">
       <ul class="menu">
-        <li><span data-icon="shield"></span><span>Rol</span><em id="pRole"></em></li>
-        <li id="pStatRow"><span data-icon="check"></span><span>Onaylı katılım</span><em id="pStat"></em></li>
-        <li><span data-icon="clock"></span><span>Saat dilimi</span><em>Türkiye (UTC+3)</em></li>
-        <li><span data-icon="info"></span><span>Uygulama</span><em>Derstayım</em></li>
-        <li><button id="logout" class="menu-btn"><span data-icon="logout"></span><span>Çıkış Yap</span></button></li>
+        <li><span data-icon="shield"></span><span data-i18n="role"></span><em id="pRole"></em></li>
+        <li id="pStatRow"><span data-icon="check"></span><span data-i18n="approved_count"></span><em id="pStat"></em></li>
+        <li><span data-icon="clock"></span><span data-i18n="timezone"></span><em data-i18n="timezone_val"></em></li>
+        <li><span data-icon="info"></span><span data-i18n="app"></span><em>Derstayım</em></li>
+        <li><span data-icon="globe"></span><span data-i18n="language"></span>
+          <span class="lang-switch"><button data-lang="tr">TR</button><button data-lang="en">EN</button></span></li>
+        <li><button id="logout" class="menu-btn"><span data-icon="logout"></span><span data-i18n="logout"></span></button></li>
       </ul>
-      <p class="fine center">English Time · Dil Okulu ve Yurtdışı Eğitim Danışmanlığı</p>
+      <p class="fine center" data-i18n="footer"></p>
     </div>
   </section>
 
@@ -201,17 +204,17 @@
       <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
       <span class="big-check" data-icon="check"></span>
     </div>
-    <h2>Geldin!</h2>
-    <p>Yoklaman başarıyla kaydedildi.</p>
+    <h2 data-i18n="success_title"></h2>
+    <p data-i18n="success_text"></p>
     <div class="stamp-card">
       <span data-icon="clock"></span>
       <div>
-        <small>Kayıt zamanı</small>
+        <small data-i18n="checkin_time"></small>
         <b id="successTime"></b>
-        <small>(Sunucu saati)</small>
+        <small data-i18n="server_time"></small>
       </div>
     </div>
-    <button id="successOk" class="btn btn-black btn-lg">Tamam</button>
+    <button id="successOk" class="btn btn-black btn-lg" data-i18n="ok"></button>
     <p class="goodjob">Good job! ☺</p>
   </div>
 

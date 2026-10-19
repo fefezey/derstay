@@ -8,6 +8,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { firebaseConfig } from "./config.js";
 import { wordOfTheDay } from "./words.js";
+import { t, locale, applyStatic, setLang } from "./i18n.js";
 
 // Yerelde "npm run dev" ile denerken gerçek proje yerine emülatör kullanılır
 const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
@@ -42,21 +43,23 @@ const ICONS = {
   info: svg(`<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>`),
   logout: svg(`<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/>`),
   undo: svg(`<path d="M4 10h11a5 5 0 0 1 0 10h-3"/><path d="M8 6l-4 4 4 4"/>`),
+  globe: svg(`<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 3.5 5.5 3.5 8.5s-1 6-3.5 8.5c-2.5-2.5-3.5-5.5-3.5-8.5s1-6 3.5-8.5z"/>`),
 };
 
 function hydrateIcons(root = document) {
   for (const el of root.querySelectorAll("[data-icon]")) el.innerHTML = ICONS[el.dataset.icon] ?? "";
 }
 hydrateIcons();
+applyStatic();
 
 // Tarih her zaman Türkiye saatine göre (sunucu da aynısını kontrol eder)
 const today = () => new Date().toLocaleDateString("sv-SE", { timeZone: TZ });
 const asDate = (d) => new Date(d + "T12:00:00");
-const prettyDate = (d) => asDate(d).toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" });
+const prettyDate = (d) => asDate(d).toLocaleDateString(locale(), { weekday: "long", day: "numeric", month: "long" });
 const fmtTime = (ts) => ts
   ? ts.toDate().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", timeZone: TZ })
   : "…";
-const fmtStamp = (ts) => ts.toDate().toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric", timeZone: TZ })
+const fmtStamp = (ts) => ts.toDate().toLocaleDateString(locale(), { day: "numeric", month: "long", year: "numeric", timeZone: TZ })
   + " • " + fmtTime(ts);
 const nowHM = () => new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -67,11 +70,11 @@ const avatar = (name, photo) => photo
   ? `<img src="${esc(photo)}" alt="" referrerpolicy="no-referrer">`
   : esc(initials(name));
 
-const PILL = {
-  approved: `<span class="pill ok">${ICONS.check}Geldi</span>`,
-  pending: `<span class="pill wait">${ICONS.clock}Bekliyor</span>`,
-  rejected: `<span class="pill no">${ICONS.x}Reddedildi</span>`,
-};
+const pill = (status) => ({
+  approved: `<span class="pill ok">${ICONS.check}${t("pill_present")}</span>`,
+  pending: `<span class="pill wait">${ICONS.clock}${t("pill_pending")}</span>`,
+  rejected: `<span class="pill no">${ICONS.x}${t("pill_rejected")}</span>`,
+})[status];
 
 let unsubs = [];
 function clearSubs() { unsubs.forEach((u) => u()); unsubs = []; }
@@ -89,31 +92,41 @@ function toast(msg) {
 
 const SCREENS = ["loading", "login", "s-home", "s-history", "t-home", "profile"];
 let tabs = [];
+let rerender = () => {}; // dil değişince açık ekranı yeniden çizer
 
 function go(id) {
   for (const s of SCREENS) $("#" + s).hidden = s !== id;
-  $("#tabbar").hidden = !tabs.some((t) => t.id === id);
+  $("#tabbar").hidden = !tabs.some((tab) => tab.id === id);
   for (const b of document.querySelectorAll(".tab")) b.classList.toggle("active", b.dataset.go === id);
   window.scrollTo(0, 0);
 }
 
 function setTabs(list) {
   tabs = list;
-  $("#tabbar").innerHTML = list.map((t) =>
-    `<button class="tab" data-go="${t.id}">${ICONS[t.icon]}<span>${t.label}</span></button>`).join("");
+  $("#tabbar").innerHTML = list.map((tab) =>
+    `<button class="tab" data-go="${tab.id}">${ICONS[tab.icon]}<span>${t(tab.label)}</span></button>`).join("");
+  for (const b of document.querySelectorAll(".tab")) b.classList.toggle("active", !$("#" + b.dataset.go).hidden);
 }
 
 document.addEventListener("click", (e) => {
+  const l = e.target.closest("[data-lang]");
+  if (l) {
+    setLang(l.dataset.lang);
+    setTabs(tabs);
+    rerender();
+    return;
+  }
   const b = e.target.closest("[data-go]");
   if (b) go(b.dataset.go);
 });
 
 $("#loginBtn").onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
-  .catch((e) => toast("Giriş yapılamadı: " + e.message));
-$("#logout").onclick = () => { if (confirm("Çıkış yapılsın mı?")) signOut(auth); };
+  .catch((e) => toast(t("login_error") + e.message));
+$("#logout").onclick = () => { if (confirm(t("confirm_logout"))) signOut(auth); };
 
 onAuthStateChanged(auth, async (user) => {
   clearSubs();
+  rerender = () => {};
   $("#success").hidden = true;
   if (!user) {
     setTabs([]);
@@ -130,18 +143,20 @@ function fillProfile(user, isTeacher) {
   $("#pAvatar").innerHTML = avatar(user.displayName, user.photoURL);
   $("#pName").textContent = user.displayName || "—";
   $("#pEmail").textContent = user.email || "";
-  $("#pRole").textContent = isTeacher ? "Hoca" : "Öğrenci";
+  $("#pRole").textContent = t(isTeacher ? "role_teacher" : "role_student");
   $("#pStatRow").hidden = isTeacher;
 }
 
 function greeting() {
   const h = Number(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", timeZone: TZ }));
-  return h < 12 ? "Günaydın" : h < 18 ? "Merhaba" : "İyi akşamlar";
+  return t(h < 12 ? "morning" : h < 18 ? "day" : "evening");
 }
+
+const hello = (name, key = "hello") => t(name ? key : "hello_noname", { g: greeting(), name });
 
 function setLive(el, session) {
   const closed = session?.open === false;
-  el.textContent = closed ? "Kapalı" : "Canlı";
+  el.textContent = t(closed ? "closed" : "live");
   el.classList.toggle("closed", closed);
 }
 
@@ -149,9 +164,9 @@ function setLive(el, session) {
 
 function startStudent(user) {
   setTabs([
-    { id: "s-home", label: "Ana Sayfa", icon: "home" },
-    { id: "s-history", label: "Geçmiş", icon: "history" },
-    { id: "profile", label: "Profil", icon: "user" },
+    { id: "s-home", label: "tab_home", icon: "home" },
+    { id: "s-history", label: "tab_history", icon: "history" },
+    { id: "profile", label: "profile", icon: "user" },
   ]);
   go("s-home");
 
@@ -160,14 +175,14 @@ function startStudent(user) {
   const name = firstName(user);
 
   const tick = () => {
-    $("#sHello").textContent = `${greeting()}${name ? " " + name : ""} 👋`;
+    $("#sHello").textContent = hello(name);
     $("#sClock").textContent = nowHM();
   };
   tick();
   const timer = setInterval(tick, 1000);
   unsubs.push(() => clearInterval(timer));
 
-  let date, session, record, loaded, celebrate = false;
+  let date, session, record, loaded, celebrate = false, history = [];
 
   const setStatus = (kind, icon, title, text) => {
     btn.hidden = true;
@@ -192,13 +207,13 @@ function startStudent(user) {
     if (loaded < 2) { btn.hidden = true; status.hidden = true; return; }
     const time = record ? fmtTime(record.checkedInAt) : "";
     if (record?.status === "approved") {
-      setStatus("approved", "check", "Dersteyim!", `${time} · Hocan onayladı`);
+      setStatus("approved", "check", t("st_approved_t"), t("st_approved", { time }));
     } else if (record?.status === "rejected") {
-      setStatus("rejected", "x", "Onaylanmadı", `${time} · Bir yanlışlık varsa hocanla konuş`);
+      setStatus("rejected", "x", t("st_rejected_t"), t("st_rejected", { time }));
     } else if (record) {
-      setStatus("pending", "clock", "Onay bekleniyor", `${time} · Kaydın alındı`);
+      setStatus("pending", "clock", t("st_pending_t"), t("st_pending", { time }));
     } else if (session?.open === false) {
-      setStatus("closed", "x", "Yoklama kapandı", "Bugün için artık giriş alınmıyor");
+      setStatus("closed", "x", t("st_closed_t"), t("st_closed"));
     } else {
       status.hidden = true;
       btn.hidden = false;
@@ -224,11 +239,12 @@ function startStudent(user) {
       record = s.exists() ? s.data() : null; loaded++; render();
     }, (e) => toast(e.message)));
     unsubs.push(onSnapshot(query(collection(db, "attendance"), where("uid", "==", user.uid), limit(60)),
-      (snap) => renderHistory(snap.docs.map((d) => d.data())),
+      (snap) => { history = snap.docs.map((d) => d.data()); renderHistory(history); },
       (e) => toast(e.message)));
     render();
   };
   watch();
+  rerender = () => { tick(); render(); renderHistory(history); };
 
   btn.onclick = async () => {
     if (date !== today()) { watch(); return; } // sayfa gece açık kaldıysa
@@ -248,7 +264,7 @@ function startStudent(user) {
       render();
     } catch {
       celebrate = false;
-      toast("Giriş kaydedilemedi. Yoklama kapanmış veya zaten giriş yapmış olabilirsin.");
+      toast(t("checkin_error"));
       render();
     }
   };
@@ -264,20 +280,20 @@ function renderHistory(items) {
   $("#hOk").textContent = n("approved");
   $("#hWait").textContent = n("pending");
   $("#hNo").textContent = n("rejected");
-  $("#pStat").textContent = `${n("approved")} gün`;
+  $("#pStat").textContent = t(n("approved") === 1 ? "day_one" : "days", { n: n("approved") });
 
   $("#hList").innerHTML = items.length === 0
-    ? `<li class="empty"><b>Henüz kaydın yok</b>Derse geldiğinde "Geldim"e bas, burada görünsün.</li>`
+    ? `<li class="empty">${t("history_empty")}</li>`
     : items.map((r) => {
         const d = asDate(r.date);
         return `
         <li>
-          <span class="datebox"><b>${d.getDate()}</b><small>${d.toLocaleDateString("tr-TR", { month: "short" })}</small></span>
+          <span class="datebox"><b>${d.getDate()}</b><small>${d.toLocaleDateString(locale(), { month: "short" })}</small></span>
           <div class="who">
-            <div class="name">${d.toLocaleDateString("tr-TR", { weekday: "long" })}</div>
-            <div class="time">Giriş ${fmtTime(r.checkedInAt)}</div>
+            <div class="name">${d.toLocaleDateString(locale(), { weekday: "long" })}</div>
+            <div class="time">${t("checked_in_at", { time: fmtTime(r.checkedInAt) })}</div>
           </div>
-          ${PILL[r.status]}
+          ${pill(r.status)}
         </li>`;
       }).join("");
 }
@@ -286,8 +302,8 @@ function renderHistory(items) {
 
 function startTeacher(user) {
   setTabs([
-    { id: "t-home", label: "Yoklama", icon: "list" },
-    { id: "profile", label: "Profil", icon: "user" },
+    { id: "t-home", label: "tab_attendance", icon: "list" },
+    { id: "profile", label: "profile", icon: "user" },
   ]);
   go("t-home");
 
@@ -299,7 +315,7 @@ function startTeacher(user) {
   const seen = new Set();
 
   const render = () => {
-    $("#tHello").textContent = `${greeting()}${name ? " " + name + " Hoca" : ""} 👋`;
+    $("#tHello").textContent = hello(name, "hello_teacher");
     $("#tDate").textContent = prettyDate(date);
     setLive($("#tLive"), session);
 
@@ -310,30 +326,30 @@ function startTeacher(user) {
 
     const approveAll = $("#approveAll");
     approveAll.disabled = n("pending") === 0;
-    approveAll.textContent = n("pending") ? `Hepsini onayla (${n("pending")})` : "Hepsini onayla";
+    approveAll.textContent = n("pending") ? t("approve_all_n", { n: n("pending") }) : t("approve_all");
 
     const closed = session?.open === false;
     const toggle = $("#toggleSession");
-    toggle.textContent = closed ? "Yeniden aç" : "Yoklamayı kapat";
+    toggle.textContent = t(closed ? "reopen" : "close");
     toggle.classList.toggle("danger", !closed);
 
     const q = search.value.trim().toLocaleLowerCase("tr-TR");
     const shown = q ? rows.filter((r) => (r.name || r.email).toLocaleLowerCase("tr-TR").includes(q)) : rows;
 
     list.innerHTML = rows.length === 0
-      ? `<li class="empty"><b>Henüz kimse gelmedi</b>Öğrenciler "Geldim"e bastıkça burada belirecek.</li>`
+      ? `<li class="empty">${t("t_empty")}</li>`
       : shown.length === 0
-        ? `<li class="empty"><b>Sonuç yok</b>Aramayla eşleşen öğrenci bulunamadı.</li>`
+        ? `<li class="empty">${t("t_noresult")}</li>`
         : shown.map((r) => {
             const isNew = !seen.has(r.id);
             seen.add(r.id);
             const right = r.status === "pending"
               ? `<div class="acts">
-                   <button class="act no" data-id="${esc(r.id)}" data-act="rejected" aria-label="Reddet">${ICONS.x}</button>
-                   <button class="act ok" data-id="${esc(r.id)}" data-act="approved" aria-label="Onayla">${ICONS.check}</button>
+                   <button class="act no" data-id="${esc(r.id)}" data-act="rejected" aria-label="${t("reject")}">${ICONS.x}</button>
+                   <button class="act ok" data-id="${esc(r.id)}" data-act="approved" aria-label="${t("approve")}">${ICONS.check}</button>
                  </div>`
-              : `<div class="acts">${PILL[r.status]}
-                   <button class="act undo" data-id="${esc(r.id)}" data-act="pending" aria-label="Geri al">${ICONS.undo}</button>
+              : `<div class="acts">${pill(r.status)}
+                   <button class="act undo" data-id="${esc(r.id)}" data-act="pending" aria-label="${t("undo")}">${ICONS.undo}</button>
                  </div>`;
             return `
             <li class="${isNew ? "new" : ""}">
@@ -366,6 +382,7 @@ function startTeacher(user) {
   };
   watch();
   search.oninput = render;
+  rerender = render;
 
   const decide = (id, status) => updateDoc(doc(db, "attendance", id), {
     status, decidedAt: serverTimestamp(), decidedBy: user.uid,
@@ -390,7 +407,7 @@ function startTeacher(user) {
 
   $("#toggleSession").onclick = async () => {
     const closing = session?.open !== false;
-    if (closing && !confirm("Yoklama kapansın mı? Bundan sonra kimse giriş yapamaz.")) return;
+    if (closing && !confirm(t("confirm_close"))) return;
     await setDoc(doc(db, "sessions", date), {
       open: !closing, date, updatedAt: serverTimestamp(), updatedBy: user.uid,
     }, { merge: true }).catch((err) => toast(err.message));
