@@ -1,12 +1,12 @@
-// 1) Firebase konsolu → Proje ayarları → "Web uygulaması ekle" → çıkan değerleri buraya yapıştırın.
+// Firebase projesi: dersstayim
 export const firebaseConfig = {
-  apiKey: "BURAYA",
-  authDomain: "PROJE-ID.firebaseapp.com",
-  projectId: "PROJE-ID",
-  appId: "BURAYA",
+  apiKey: "AIzaSyDRMDONr8kwuwOY_BQZtthDUu9DvK8zs3g",
+  authDomain: "dersstayim.firebaseapp.com",
+  projectId: "dersstayim",
+  appId: "1:864859948912:web:de0ae2cae8e43856d4b1b5",
 };
 
-// 2) Sınıflar (Amerika eyaletleri). Sadece İngilizce harf ve boşluk kullanın.
+// Sınıflar (Amerika eyaletleri). Sadece İngilizce harf ve boşluk kullanın.
 export const CLASSES = [
   "California",
   "Texas",

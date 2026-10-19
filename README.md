@@ -72,7 +72,7 @@ npm run dev     # http://localhost:5000 – emülatörle yerel deneme
 2. **Authentication → Sign-in method → Google**'ı açın.
 3. **Firestore Database → Veritabanı oluştur** (bölge: `eur3`).
 4. **Proje ayarları → Web uygulaması ekle** → değerleri `public/config.js`'e yapıştırın. Sınıf listesi de oradadır.
-5. `npx firebase login` → `npx firebase use --add` → `npm run deploy`
+5. `npx firebase login` → `npm run deploy` (proje `.firebaserc`'de tanımlı: `dersstayim`)
    Adres: `https://PROJE-ID.web.app` (QR kod yapıp sınıf kapısına asın).
 6. **Hocayı tanımlayın:** Hoca siteye bir kez girsin. Konsolda **Authentication → Users**'tan UID'sini kopyalayın; **Firestore**'da `teachers` koleksiyonuna bu UID ile bir belge ekleyin (alan: `name`). Sayfa yenilenince hoca ekranı açılır.
 
