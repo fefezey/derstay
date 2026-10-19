@@ -25,6 +25,8 @@ await t("kendini onaylı yazamaz", assertFails(setDoc(doc(ayse, id("ayse")), rec
 await t("öğrenci kaydını değiştiremez", assertFails(updateDoc(doc(ali, id("ali")), { status: "approved" })));
 await t("öğrenci kaydını silemez", assertFails(deleteDoc(doc(ali, id("ali")))));
 await t("öğrenci kendi kaydını okur", assertSucceeds(getDoc(doc(ali, id("ali")))));
+await t("öğrenci kendi geçmişini listeler", assertSucceeds(getDocs(query(collection(ali, "attendance"), where("uid", "==", "ali")))));
+await t("öğrenci başkasının geçmişini listeleyemez", assertFails(getDocs(query(collection(ali, "attendance"), where("uid", "==", "ayse")))));
 await t("öğrenci başkasınınkini okuyamaz", assertFails(getDoc(doc(ayse, id("ali")))));
 await t("öğrenci yoklamayı kapatamaz", assertFails(setDoc(doc(ali, `sessions/${today}`), { open: false })));
 await t("hoca listeyi görür", assertSucceeds(getDocs(query(collection(hoca, "attendance"), where("date", "==", today)))));

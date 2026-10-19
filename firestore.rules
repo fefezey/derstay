@@ -45,9 +45,10 @@ service cloud.firestore {
 
     // attendance/{tarih_uid}
     match /attendance/{id} {
-      // Hoca hepsini görür; öğrenci sadece kendi kaydını
+      // Hoca hepsini görür; öğrenci sadece kendi kayıtlarını (geçmiş dahil)
       allow read: if isTeacher()
-        || (signedIn() && id.matches('.*_' + request.auth.uid));
+        || (signedIn() && id.matches('.*_' + request.auth.uid))
+        || (signedIn() && resource.data.uid == request.auth.uid);
 
       // Öğrenci: sadece kendi adına, sadece bugüne, sadece sunucu saatiyle,
       // sadece "bekliyor" durumunda ve yoklama açıksa kayıt açabilir.

@@ -30,6 +30,7 @@ Daha az uğraş, daha güvenilir yoklama. 🎯
 2. **Geldim**'e basar; giriş saati sunucu saatiyle kaydedilir.
 3. Hoca kendi telefonunda listeyi canlı görür: **Onayla / Reddet** ya da **Bekleyenlerin hepsini onayla**.
 4. Hoca **Yoklamayı kapat** deyince o gün kimse giriş yapamaz.
+5. Öğrenci **Geçmiş** sekmesinde eski kayıtlarını, **Profil**'de bilgilerini görür.
 
 Teknoloji: düz HTML/CSS/JS + Firebase (Authentication, Firestore, Hosting). Sunucu kurulumu yok, ücretsiz kotada çalışır.
 
@@ -60,7 +61,7 @@ docs/              Ekran görüntüleri
 
 ```
 npm install
-npm test        # 21 kural testi (Java gerekir)
+npm test        # 23 kural testi (Java gerekir)
 npm run dev     # http://localhost:5000 – emülatörle yerel deneme
 ```
 

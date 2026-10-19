@@ -7,169 +7,212 @@
   <title>Derstayım · English Time</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Inter:wght@400;500;600;700;800&family=Courier+Prime:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Caveat:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="signed-out">
+<body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <symbol id="bigben" viewBox="0 0 40 120">
-      <polygon points="20,0 22.5,16 17.5,16" fill="currentColor"/>
-      <polygon points="11,36 20,14 29,36" fill="currentColor"/>
-      <rect x="10" y="36" width="20" height="4" fill="currentColor"/>
-      <rect x="8" y="40" width="24" height="24" fill="currentColor"/>
-      <circle cx="20" cy="52" r="8.5" fill="#FCEB4F"/>
-      <circle cx="20" cy="52" r="8.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
-      <line x1="20" y1="52" x2="20" y2="46" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-      <line x1="20" y1="52" x2="24" y2="54" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-      <rect x="10" y="64" width="20" height="52" fill="currentColor"/>
-      <rect x="13.5" y="70" width="2" height="40" fill="#FCEB4F"/>
-      <rect x="19" y="70" width="2" height="40" fill="#FCEB4F"/>
-      <rect x="24.5" y="70" width="2" height="40" fill="#FCEB4F"/>
-      <rect x="6" y="116" width="28" height="4" fill="currentColor"/>
-    </symbol>
-
-    <!-- Londra silüeti: binalar, Big Ben, London Eye, Tower Bridge, otobüs -->
-    <symbol id="skyline" viewBox="0 0 400 100" preserveAspectRatio="xMidYMax slice">
-      <g fill="currentColor">
-        <rect x="0" y="70" width="18" height="30"/>
-        <rect x="16" y="58" width="22" height="42"/>
-        <rect x="36" y="76" width="16" height="24"/>
-        <use href="#bigben" x="48" y="6" width="30" height="94"/>
-        <rect x="76" y="66" width="26" height="34"/>
-        <polygon points="76,66 89,56 102,66"/>
-        <rect x="100" y="80" width="18" height="20"/>
-      </g>
-      <g fill="none" stroke="currentColor">
-        <circle cx="150" cy="52" r="34" stroke-width="3"/>
-        <circle cx="150" cy="52" r="5" stroke-width="3"/>
-        <g stroke-width="1.2">
-          <line x1="150" y1="18" x2="150" y2="86"/><line x1="116" y1="52" x2="184" y2="52"/>
-          <line x1="126" y1="28" x2="174" y2="76"/><line x1="174" y1="28" x2="126" y2="76"/>
-          <line x1="137" y1="21" x2="163" y2="83"/><line x1="163" y1="21" x2="137" y2="83"/>
-          <line x1="119" y1="39" x2="181" y2="65"/><line x1="181" y1="39" x2="119" y2="65"/>
-        </g>
-        <path d="M150 52 L132 100 M150 52 L168 100" stroke-width="3"/>
-      </g>
-      <g fill="currentColor">
-        <circle cx="150" cy="18" r="3"/><circle cx="184" cy="52" r="3"/><circle cx="116" cy="52" r="3"/>
-        <circle cx="174" cy="28" r="3"/><circle cx="126" cy="28" r="3"/><circle cx="174" cy="76" r="3"/><circle cx="126" cy="76" r="3"/>
-        <rect x="190" y="74" width="20" height="26"/>
-        <rect x="222" y="40" width="20" height="60"/>
-        <polygon points="220,40 232,22 244,40"/>
-        <rect x="290" y="40" width="20" height="60"/>
-        <polygon points="288,40 300,22 312,40"/>
-        <rect x="242" y="46" width="48" height="5"/>
-        <rect x="210" y="76" width="112" height="5"/>
-        <path d="M242 81 Q266 66 290 81 Z"/>
-        <rect x="320" y="86" width="80" height="14"/>
-      </g>
-      <g>
-        <rect x="334" y="54" width="54" height="36" rx="5" fill="currentColor"/>
-        <rect x="339" y="59" width="44" height="9" rx="2" fill="#FCEB4F"/>
-        <rect x="339" y="73" width="44" height="9" rx="2" fill="#FCEB4F"/>
-        <g fill="currentColor"><rect x="349" y="59" width="2" height="23"/><rect x="360" y="59" width="2" height="23"/><rect x="371" y="59" width="2" height="23"/></g>
-        <circle cx="345" cy="91" r="5" fill="currentColor" stroke="#FCEB4F" stroke-width="2"/>
-        <circle cx="377" cy="91" r="5" fill="currentColor" stroke="#FCEB4F" stroke-width="2"/>
-      </g>
+    <symbol id="crown" viewBox="0 0 24 16">
+      <path d="M1 2l5.5 6L12 1l5.5 7L23 2l-2.5 13h-17z" fill="currentColor"/>
     </symbol>
   </svg>
 
-  <header class="topbar">
-    <div class="brand">
-      <span class="w1">ENGLISH</span><svg class="brand-ben"><use href="#bigben"/></svg><span class="w2">TIME</span>
+  <!-- Yükleniyor -->
+  <section id="loading" class="screen loading">
+    <span class="brand stacked"><span>English</span><span class="t">Time<svg class="crown"><use href="#crown"/></svg></span></span>
+  </section>
+
+  <!-- Giriş -->
+  <section id="login" class="screen login" hidden>
+    <div class="splash">
+      <span class="brand stacked dark"><span>English</span><span class="t">Time<svg class="crown"><use href="#crown"/></svg></span></span>
+      <h1 class="script">Derstayım<svg class="spark" viewBox="0 0 30 30"><path d="M4 16l9-2M8 6l6 6M18 3l-1 8" stroke="#111" stroke-width="3" stroke-linecap="round"/></svg></h1>
+      <p class="splash-sub">Ders + Stay (kalmak)</p>
+      <div class="art">
+        <div class="bubble">Geldim,<br>kaydoldum,<br>dersteyim!</div>
+        <svg class="alarm" viewBox="0 0 160 160" aria-hidden="true">
+          <g fill="none" stroke="#111" stroke-width="9" stroke-linecap="round">
+            <circle cx="80" cy="88" r="50"/>
+            <path d="M80 60v30l18 12"/>
+            <path d="M45 132l-12 14M115 132l12 14"/>
+            <path d="M14 30l8 10M8 52l12 3M36 12l4 12" stroke-width="6"/>
+          </g>
+          <path d="M28 52a24 24 0 0 1 34-30z" fill="#111"/>
+          <path d="M132 52a24 24 0 0 0-34-30z" fill="#111"/>
+        </svg>
+      </div>
+      <svg class="hill" viewBox="0 0 400 80" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 80V40C60 10 120 60 200 40S330 0 400 30V80z" fill="#111"/>
+      </svg>
     </div>
-    <button id="me" class="me" title="Çıkış yap"></button>
-  </header>
+    <div class="login-sheet">
+      <h2>Hoş Geldin!</h2>
+      <p class="muted">Derstayım'a giriş yapmak için Google hesabını kullan.</p>
+      <button id="loginBtn" class="btn btn-yellow btn-lg">
+        <svg class="g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#111" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>
+        Google ile giriş yap
+      </button>
+      <p class="fine">Giriş saatin sunucu saatiyle kaydedilir.<br>Sadece kendi hesabınla yoklama verebilirsin.</p>
+    </div>
+    <footer class="login-foot">
+      <svg viewBox="0 0 400 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60V30C80 0 160 50 240 30S360 0 400 20V60z" fill="#FFD21F"/><path d="M0 60V44C90 20 170 60 260 44S370 24 400 36V60z" fill="#111"/></svg>
+      <span class="brand"><span>English</span><span class="t">Time<svg class="crown"><use href="#crown"/></svg></span></span>
+    </footer>
+  </section>
 
-  <main>
-    <section id="loading" class="view loading">
-      <svg class="spin-ben"><use href="#bigben"/></svg>
-    </section>
-
-    <section id="login" class="view login" hidden>
-      <div class="login-top">
-        <div class="biglogo">
-          <span class="w1">ENGLISH</span><svg class="logo-ben"><use href="#bigben"/></svg><span class="w2">TIME</span>
+  <!-- Öğrenci: Ana sayfa -->
+  <section id="s-home" class="page" hidden>
+    <header class="hero">
+      <div class="hero-top">
+        <span class="brand"><span>English</span><span class="t">Time<svg class="crown"><use href="#crown"/></svg></span></span>
+        <span id="sLive" class="live"></span>
+      </div>
+      <h1 id="sHello"></h1>
+      <p>Bugün derse hazır mısın?</p>
+    </header>
+    <div class="content">
+      <div class="card today">
+        <span class="icon-box" data-icon="calendar"></span>
+        <div class="today-text">
+          <small>Bugünkü yoklama</small>
+          <b>English Time</b>
+          <span id="sDate"></span>
         </div>
-        <p class="sub">DİL OKULU VE YURTDIŞI EĞİTİM DANIŞMANLIĞI</p>
+        <span id="sClock" class="today-clock"></span>
       </div>
-      <div class="login-card">
-        <span class="kicker">DERSTAYIM</span>
-        <h1>Derse geldin mi?<br><em>Tek dokunuşla</em> söyle.</h1>
-        <button id="loginBtn" class="google">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.6 5.4 2.7 13.2l7.8 6.1C12.4 13.7 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.1-10 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.8-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.8l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.2-13.5-9.9l-7.8 6.1C6.6 42.6 14.6 48 24 48z"/></svg>
-          Google ile giriş yap
-        </button>
-        <p class="fine">Geldim, kaydoldum, dersteyim!</p>
-      </div>
-      <svg class="skyline"><use href="#skyline"/></svg>
-    </section>
 
-    <section id="student" class="view student" hidden>
-      <div class="hello">
-        <p id="greetEn" class="hello-en"></p>
-        <p id="greetTr" class="hello-tr"></p>
+      <button id="checkin" class="checkin" hidden>
+        <span class="checkin-row"><span class="check-dot" data-icon="check"></span>Geldim</span>
+        <span class="checkin-sub">Yoklama için dokun</span>
+      </button>
+      <div id="sStatus" class="status-card" hidden>
+        <span id="sStatusIcon" class="status-icon"></span>
+        <div>
+          <b id="sStatusTitle"></b>
+          <span id="sStatusText"></span>
+        </div>
       </div>
-      <div class="stage">
-        <button id="checkin" class="checkin" hidden aria-label="Geldim">
-          <span class="pulse"></span>
-          <span id="clockface" class="clockface"></span>
-          <span class="ribbon">GELDİM</span>
-        </button>
-        <article id="pass" class="pass" hidden>
-          <header class="pass-head">
-            <span class="pass-brand">ENGLISH <b>TIME</b></span>
-            <span class="pass-kind">CLASS PASS</span>
-          </header>
-          <div class="pass-body">
-            <div class="pass-field wide"><small>ÖĞRENCİ</small><b id="passName"></b></div>
-            <div class="pass-field"><small>TARİH</small><b id="passDate"></b></div>
-            <div class="pass-field"><small>GİRİŞ</small><b id="passTime"></b></div>
-          </div>
-          <div class="pass-tear"></div>
-          <div class="pass-foot">
-            <div id="barcode" class="barcode"></div>
-            <div id="stamp" class="stamp"></div>
-          </div>
-          <p id="passNote" class="pass-note"></p>
-        </article>
-      </div>
-      <aside id="wotd" class="wotd"></aside>
-      <svg class="skyline"><use href="#skyline"/></svg>
-    </section>
 
-    <section id="teacher" class="view teacher" hidden>
-      <div class="t-hero">
-        <div class="t-top">
+      <div class="tiles">
+        <button class="tile" data-go="s-history">
+          <span data-icon="history"></span>
+          <b>Yoklama Geçmişi</b>
+          <small>Kayıtlarını incele</small>
+        </button>
+        <button class="tile" data-go="profile">
+          <span data-icon="user"></span>
+          <b>Profilim</b>
+          <small>Bilgilerini gör</small>
+        </button>
+      </div>
+
+      <div id="wotd" class="card wotd"></div>
+    </div>
+  </section>
+
+  <!-- Öğrenci: Geçmiş -->
+  <section id="s-history" class="page" hidden>
+    <header class="hero small">
+      <h1>Yoklama Geçmişi</h1>
+      <p>Son 60 kaydın</p>
+    </header>
+    <div class="content">
+      <div class="card stats">
+        <div><span class="dot ok" data-icon="check"></span><small>Geldi</small><b id="hOk">0</b></div>
+        <div><span class="dot wait" data-icon="clock"></span><small>Bekleyen</small><b id="hWait">0</b></div>
+        <div><span class="dot no" data-icon="x"></span><small>Ret</small><b id="hNo">0</b></div>
+      </div>
+      <ul id="hList" class="rows"></ul>
+    </div>
+  </section>
+
+  <!-- Hoca: Yoklama -->
+  <section id="t-home" class="page" hidden>
+    <header class="hero">
+      <div class="hero-top">
+        <span class="brand"><span>English</span><span class="t">Time<svg class="crown"><use href="#crown"/></svg></span></span>
+        <span id="tLive" class="live"></span>
+      </div>
+      <h1 id="tHello"></h1>
+      <p>Bugünün yoklamasını yönetebilirsin.</p>
+    </header>
+    <div class="content">
+      <div class="card lesson">
+        <div class="lesson-head">
+          <span class="icon-box" data-icon="clock"></span>
           <div>
-            <p id="tGreet" class="t-greet"></p>
-            <p id="teacherDate" class="t-date"></p>
+            <b>Bugünkü yoklama</b>
+            <span id="tDate" class="muted"></span>
           </div>
-          <span id="sessionPill" class="pill"></span>
         </div>
-        <div class="t-main">
-          <div class="ring">
-            <svg viewBox="0 0 120 120">
-              <circle class="ring-bg" cx="60" cy="60" r="52"/>
-              <circle id="ringFg" class="ring-fg" cx="60" cy="60" r="52"/>
-            </svg>
-            <div class="ring-text"><b id="ringNum">0</b><span id="ringOf">/ 0</span></div>
-          </div>
-          <div class="t-counts">
-            <div class="cnt pending"><b id="nPending">0</b><span>Bekleyen</span></div>
-            <div class="cnt ok"><b id="nApproved">0</b><span>Onaylı</span></div>
-            <div class="cnt no"><b id="nRejected">0</b><span>Ret</span></div>
-          </div>
+        <div class="stats inline">
+          <div><span class="dot ok" data-icon="check"></span><small>Katılan</small><b id="nOk">0</b></div>
+          <div><span class="dot wait" data-icon="clock"></span><small>Bekleyen</small><b id="nWait">0</b></div>
+          <div><span class="dot all" data-icon="users"></span><small>Toplam</small><b id="nAll">0</b></div>
+        </div>
+        <div class="lesson-actions">
+          <button id="approveAll" class="btn btn-yellow">Hepsini onayla</button>
+          <button id="toggleSession" class="btn btn-outline">Yoklamayı kapat</button>
         </div>
       </div>
-      <h2 class="list-title">Gelenler</h2>
-      <ul id="list" class="list"></ul>
-    </section>
-  </main>
 
-  <div id="dock" class="dock" hidden>
-    <button id="approveAll" class="btn primary">Hepsini onayla</button>
-    <button id="toggleSession" class="btn ghost">Yoklamayı kapat</button>
+      <h3 class="section-title">Canlı Liste</h3>
+      <label class="search">
+        <span data-icon="search"></span>
+        <input id="search" type="search" placeholder="Öğrenci ara..." autocomplete="off">
+      </label>
+      <ul id="tList" class="rows"></ul>
+    </div>
+  </section>
+
+  <!-- Profil (ikisi için ortak) -->
+  <section id="profile" class="page" hidden>
+    <header class="hero profile-hero">
+      <h1>Profil</h1>
+      <div class="me">
+        <span id="pAvatar" class="avatar xl"></span>
+        <div>
+          <b id="pName"></b>
+          <span id="pEmail"></span>
+        </div>
+      </div>
+    </header>
+    <div class="content">
+      <ul class="menu">
+        <li><span data-icon="shield"></span><span>Rol</span><em id="pRole"></em></li>
+        <li id="pStatRow"><span data-icon="check"></span><span>Onaylı katılım</span><em id="pStat"></em></li>
+        <li><span data-icon="clock"></span><span>Saat dilimi</span><em>Türkiye (UTC+3)</em></li>
+        <li><span data-icon="info"></span><span>Uygulama</span><em>Derstayım</em></li>
+        <li><button id="logout" class="menu-btn"><span data-icon="logout"></span><span>Çıkış Yap</span></button></li>
+      </ul>
+      <p class="fine center">English Time · Dil Okulu ve Yurtdışı Eğitim Danışmanlığı</p>
+    </div>
+  </section>
+
+  <nav id="tabbar" class="tabbar" hidden></nav>
+
+  <!-- Başarı ekranı -->
+  <div id="success" class="success" hidden>
+    <div class="success-top">
+      <span class="brand dark"><span>English</span><span class="t">Time<svg class="crown"><use href="#crown"/></svg></span></span>
+      <button id="successClose" class="x" data-icon="x" aria-label="Kapat"></button>
+    </div>
+    <div class="burst">
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      <span class="big-check" data-icon="check"></span>
+    </div>
+    <h2>Geldin!</h2>
+    <p>Yoklaman başarıyla kaydedildi.</p>
+    <div class="stamp-card">
+      <span data-icon="clock"></span>
+      <div>
+        <small>Kayıt zamanı</small>
+        <b id="successTime"></b>
+        <small>(Sunucu saati)</small>
+      </div>
+    </div>
+    <button id="successOk" class="btn btn-black btn-lg">Tamam</button>
+    <p class="goodjob">Good job! ☺</p>
   </div>
 
   <div id="toast" class="toast" hidden></div>
