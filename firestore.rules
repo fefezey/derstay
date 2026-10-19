@@ -37,13 +37,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // sessions/{tarih_sınıf} → { open: true/false }
+    // sessions/{tarih} → { open: true/false }
     match /sessions/{sid} {
       allow read: if signedIn();
       allow write: if isTeacher();
     }
 
-    // attendance/{tarih_sınıf_uid}
+    // attendance/{tarih_uid}
     match /attendance/{id} {
       // Hoca hepsini görür; öğrenci sadece kendi kaydını
       allow read: if isTeacher()
@@ -54,17 +54,17 @@ service cloud.firestore {
       // Belge kimliği sabit olduğu için aynı gün ikinci kez giriş yapılamaz.
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly(
-             ['uid', 'name', 'email', 'classId', 'date', 'checkedInAt', 'status'])
+             ['uid', 'name', 'email', 'photo', 'date', 'checkedInAt', 'status'])
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.name == request.auth.token.get('name', '')
         && request.resource.data.email == request.auth.token.get('email', '')
-        && request.resource.data.classId is string
-        && request.resource.data.classId.matches('^[A-Za-z ]{2,30}$')
+        && request.resource.data.photo is string
+        && request.resource.data.photo.matches('^$|^https://[a-z0-9.-]+\\.googleusercontent\\.com/.{1,500}$')
         && request.resource.data.date == todayTR()
         && request.resource.data.checkedInAt == request.time
         && request.resource.data.status == 'pending'
-        && id == todayTR() + '_' + request.resource.data.classId + '_' + request.auth.uid
-        && sessionOpen(todayTR() + '_' + request.resource.data.classId);
+        && id == todayTR() + '_' + request.auth.uid
+        && sessionOpen(todayTR());
 
       // Onay / ret sadece hocada; giriş saati ve isim değiştirilemez
       allow update: if isTeacher()

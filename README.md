@@ -22,16 +22,14 @@ Daha az uğraş, daha güvenilir yoklama. 🎯
 
 ## 📸 Ekranlar
 
-| Öğrenci | Hoca | Yoklama kapalı |
-|---|---|---|
-| <img src="docs/ekran-goruntuleri/2-ogrenci-geldim.png" width="220"> | <img src="docs/ekran-goruntuleri/5-hoca-onay-ret.png" width="220"> | <img src="docs/ekran-goruntuleri/8-gec-kalan-ogrenci.png" width="220"> |
+![Derstayım ekranları](docs/ekran-goruntuleri/ozet.png)
 
 ## ⚙️ Nasıl Çalışır
 
-1. Öğrenci siteye Google hesabıyla girer, sınıfını (Amerika eyaletleri: Texas, California…) seçer.
+1. Öğrenci siteye Google hesabıyla girer.
 2. **Geldim**'e basar; giriş saati sunucu saatiyle kaydedilir.
 3. Hoca kendi telefonunda listeyi canlı görür: **Onayla / Reddet** ya da **Bekleyenlerin hepsini onayla**.
-4. Hoca **Yoklamayı kapat** deyince o gün o sınıfa kimse giriş yapamaz.
+4. Hoca **Yoklamayı kapat** deyince o gün kimse giriş yapamaz.
 
 Teknoloji: düz HTML/CSS/JS + Firebase (Authentication, Firestore, Hosting). Sunucu kurulumu yok, ücretsiz kotada çalışır.
 
@@ -44,8 +42,8 @@ Teknoloji: düz HTML/CSS/JS + Firebase (Authentication, Firestore, Hosting). Sun
 | Saat değiştirilemez | `checkedInAt` sunucu saatine eşit olmak zorunda |
 | Kendi kaydını değiştiremez/silemez | Güncelleme sadece hocada, silme kimsede yok |
 | Onay/ret sadece hocada | `teachers` koleksiyonunda olan kişi |
-| Yoklama kapanınca giriş yok | `sessions/{tarih_sınıf}.open == false` ise reddedilir |
-| Günde bir giriş | Belge kimliği `tarih_sınıf_uid` |
+| Yoklama kapanınca giriş yok | `sessions/{tarih}.open == false` ise reddedilir |
+| Günde bir giriş | Belge kimliği `tarih_uid` |
 
 Kurallar Google sunucusunda çalışır; tarayıcıyı kurcalamak işe yaramaz.
 
@@ -62,7 +60,7 @@ docs/              Ekran görüntüleri
 
 ```
 npm install
-npm test        # 19 kural testi (Java gerekir)
+npm test        # 21 kural testi (Java gerekir)
 npm run dev     # http://localhost:5000 – emülatörle yerel deneme
 ```
 
@@ -71,7 +69,7 @@ npm run dev     # http://localhost:5000 – emülatörle yerel deneme
 1. https://console.firebase.google.com → **Proje oluştur**.
 2. **Authentication → Sign-in method → Google**'ı açın.
 3. **Firestore Database → Veritabanı oluştur** (bölge: `eur3`).
-4. **Proje ayarları → Web uygulaması ekle** → değerleri `public/config.js`'e yapıştırın. Sınıf listesi de oradadır.
+4. **Proje ayarları → Web uygulaması ekle** → değerleri `public/config.js`'e yapıştırın.
 5. `npx firebase login` → `npm run deploy` (proje `.firebaserc`'de tanımlı: `dersstayim`)
    Adres: `https://PROJE-ID.web.app` (QR kod yapıp sınıf kapısına asın).
 6. **Hocayı tanımlayın:** Hoca siteye bir kez girsin. Konsolda **Authentication → Users**'tan UID'sini kopyalayın; **Firestore**'da `teachers` koleksiyonuna bu UID ile bir belge ekleyin (alan: `name`). Sayfa yenilenince hoca ekranı açılır.

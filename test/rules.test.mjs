@@ -10,8 +10,8 @@ const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Istanbu
 const ali = env.authenticatedContext("ali", { name: "Ali", email: "ali@x.com" }).firestore();
 const ayse = env.authenticatedContext("ayse", { name: "Ayşe", email: "ayse@x.com" }).firestore();
 const hoca = env.authenticatedContext("hoca", { name: "Hoca", email: "h@x.com" }).firestore();
-const rec = (uid, name, email, extra = {}) => ({ uid, name, email, classId: "Texas", date: today, checkedInAt: serverTimestamp(), status: "pending", ...extra });
-const id = (uid, d = today) => `attendance/${d}_Texas_${uid}`;
+const rec = (uid, name, email, extra = {}) => ({ uid, name, email, photo: "", date: today, checkedInAt: serverTimestamp(), status: "pending", ...extra });
+const id = (uid, d = today) => `attendance/${d}_${uid}`;
 let pass = 0, fail = 0;
 const t = async (label, p) => { try { await p; pass++; console.log("OK  ", label); } catch (e) { fail++; console.log("FAIL", label, e.message); } };
 
@@ -26,14 +26,16 @@ await t("öğrenci kaydını değiştiremez", assertFails(updateDoc(doc(ali, id(
 await t("öğrenci kaydını silemez", assertFails(deleteDoc(doc(ali, id("ali")))));
 await t("öğrenci kendi kaydını okur", assertSucceeds(getDoc(doc(ali, id("ali")))));
 await t("öğrenci başkasınınkini okuyamaz", assertFails(getDoc(doc(ayse, id("ali")))));
-await t("öğrenci yoklamayı kapatamaz", assertFails(setDoc(doc(ali, `sessions/${today}_Texas`), { open: false })));
-await t("hoca listeyi görür", assertSucceeds(getDocs(query(collection(hoca, "attendance"), where("date", "==", today), where("classId", "==", "Texas")))));
+await t("öğrenci yoklamayı kapatamaz", assertFails(setDoc(doc(ali, `sessions/${today}`), { open: false })));
+await t("hoca listeyi görür", assertSucceeds(getDocs(query(collection(hoca, "attendance"), where("date", "==", today)))));
 await t("hoca onaylar", assertSucceeds(updateDoc(doc(hoca, id("ali")), { status: "approved", decidedAt: serverTimestamp(), decidedBy: "hoca" })));
 await t("hoca giriş saatini değiştiremez", assertFails(updateDoc(doc(hoca, id("ali")), { checkedInAt: serverTimestamp() })));
-await t("hoca yoklamayı kapatır", assertSucceeds(setDoc(doc(hoca, `sessions/${today}_Texas`), { open: false })));
+await t("hoca yoklamayı kapatır", assertSucceeds(setDoc(doc(hoca, `sessions/${today}`), { open: false })));
 await t("kapandıktan sonra giriş yok", assertFails(setDoc(doc(ayse, id("ayse")), rec("ayse", "Ayşe", "ayse@x.com"))));
-await t("hoca yeniden açar", assertSucceeds(setDoc(doc(hoca, `sessions/${today}_Texas`), { open: true })));
+await t("hoca yeniden açar", assertSucceeds(setDoc(doc(hoca, `sessions/${today}`), { open: true })));
 await t("açılınca giriş olur", assertSucceeds(setDoc(doc(ayse, id("ayse")), rec("ayse", "Ayşe", "ayse@x.com"))));
+await t("Google fotoğrafı kabul edilir", assertSucceeds(setDoc(doc(env.authenticatedContext("can", { name: "Can", email: "can@x.com" }).firestore(), id("can")), rec("can", "Can", "can@x.com", { photo: "https://lh3.googleusercontent.com/a/abc=s96-c" }))));
+await t("başka siteden fotoğraf olmaz", assertFails(setDoc(doc(env.authenticatedContext("ece", { name: "Ece", email: "ece@x.com" }).firestore(), id("ece")), rec("ece", "Ece", "ece@x.com", { photo: "https://kotu.site/resim.png" }))));
 console.log(`\n${pass} geçti, ${fail} kaldı`);
 await env.cleanup();
 process.exit(fail ? 1 : 0);
